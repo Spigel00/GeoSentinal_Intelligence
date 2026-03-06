@@ -1,0 +1,14 @@
+[
+  {
+    "region": "Arunachal Corridor",
+    "risk_level": "HIGH",
+    "probability": 0.701,
+    "timestamp": "2026-03-06T18:04:07.020460"
+  },
+  {
+    "region": "Western Ghats",
+    "risk_level": "HIGH",
+    "probability": 0.71,
+    "timestamp": "2026-03-06T18:04:07.021181"
+  }
+]

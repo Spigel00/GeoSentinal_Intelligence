@@ -1,0 +1,27 @@
+[
+  {
+    "region": "Uttarakhand",
+    "lat": 30.0668,
+    "lon": 79.0193
+  },
+  {
+    "region": "Arunachal Corridor",
+    "lat": 28.2180,
+    "lon": 94.7278
+  },
+  {
+    "region": "Himachal Pradesh",
+    "lat": 31.7433,
+    "lon": 77.1205
+  },
+  {
+    "region": "Nilgiris",
+    "lat": 11.4107,
+    "lon": 76.7314
+  },
+  {
+    "region": "Western Ghats",
+    "lat": 12.5000,
+    "lon": 75.5000
+  }
+]
