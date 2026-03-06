@@ -6,6 +6,7 @@ import json
 import os
 from datetime import datetime
 from typing import List, Dict
+from services.notification_service import get_notification_service
 
 
 class AlertService:
@@ -24,6 +25,7 @@ class AlertService:
         """
         self.alerts_file = alerts_file
         self.users_file = users_file
+        self.notification_service = get_notification_service()
     
     def load_alerts(self) -> List[Dict]:
         """Load all alerts from JSON file"""
@@ -103,60 +105,42 @@ class AlertService:
         if not users:
             return False
         
-        # Send notifications (mock implementation)
+        # Send notifications using real notification service
+        notification_results = []
         for user in users:
-            self._send_sms_alert(user, region, probability)
-            self._send_email_alert(user, region, probability)
+            result = self.notification_service.send_landslide_alert(
+                user=user,
+                region=region,
+                probability=probability,
+                risk_level="HIGH"
+            )
+            notification_results.append({
+                "user": user.get("name"),
+                "email_result": result.get("email"),
+                "sms_result": result.get("sms")
+            })
         
         return True
     
-    def _send_email_alert(self, user: Dict, region: str, probability: float):
+    def send_custom_alert(self, user: Dict, region: str, probability: float, risk_level: str = "HIGH"):
         """
-        Send email alert (mock implementation).
+        Send custom alert to a user (both email and SMS).
         
         Args:
             user: User dictionary
             region: Region name
             probability: Landslide probability
+            risk_level: Risk level (LOW, MEDIUM, HIGH)
+            
+        Returns:
+            Dict with notification results
         """
-        subject = "GeoSentinel Landslide Warning"
-        body = f"""
-A high landslide risk has been detected in your region.
-
-Region: {region}
-Probability: {probability:.2%}
-Risk Level: HIGH
-Timestamp: {datetime.now().isoformat()}
-
-Please take necessary precautions and avoid vulnerable terrain.
-
-GeoSentinel Alerts Team
-        """
-        
-        print(f"📧 EMAIL ALERT [Mock]")
-        print(f"   To: {user.get('email')}")
-        print(f"   Subject: {subject}")
-        print(f"   Body: {body}")
-    
-    def _send_sms_alert(self, user: Dict, region: str, probability: float):
-        """
-        Send SMS alert (mock implementation).
-        
-        Args:
-            user: User dictionary
-            region: Region name
-            probability: Landslide probability
-        """
-        message = f"""GeoSentinel Alert
-
-High landslide risk detected in {region}.
-
-Probability: {probability:.2%}
-Please avoid vulnerable terrain."""
-        
-        print(f"📱 SMS ALERT [Mock]")
-        print(f"   To: {user.get('phone')}")
-        print(f"   Message: {message}")
+        return self.notification_service.send_landslide_alert(
+            user=user,
+            region=region,
+            probability=probability,
+            risk_level=risk_level
+        )
     
     def get_all_alerts(self) -> List[Dict]:
         """Get all logged alerts"""

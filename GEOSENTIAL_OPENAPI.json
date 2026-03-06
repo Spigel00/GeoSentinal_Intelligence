@@ -1,0 +1,823 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "GeoSentinel Backend API",
+    "description": "Landslide Prediction System with Environmental Monitoring",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/users/register": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Register User",
+        "description": "Register a new user with their monitoring region.\n\nReturns:\n    UserResponse with user details",
+        "operationId": "register_user_users_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegistrationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get All Users",
+        "description": "Get all registered users.\n\nReturns:\n    List of all users",
+        "operationId": "get_all_users_users__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get All Users Users  Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get User",
+        "description": "Get a specific user by ID.\n\nArgs:\n    user_id: User ID\n    \nReturns:\n    User details",
+        "operationId": "get_user_users__user_id__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete User",
+        "description": "Delete a user by ID.\n\nArgs:\n    user_id: User ID\n    \nReturns:\n    Success message",
+        "operationId": "delete_user_users__user_id__delete",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/regions": {
+      "get": {
+        "tags": [
+          "regions"
+        ],
+        "summary": "Get All Regions",
+        "description": "Get all monitoring regions.\n\nReturns:\n    List of regions with current risk levels",
+        "operationId": "get_all_regions_regions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RegionResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get All Regions Regions Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/regions/{region_name}/predict": {
+      "post": {
+        "tags": [
+          "regions"
+        ],
+        "summary": "Predict For Region",
+        "description": "Run prediction for a specific region with simulated environmental data.\n\nArgs:\n    region_name: Name of the region\n    \nReturns:\n    Prediction result with probability and risk level",
+        "operationId": "predict_for_region_regions__region_name__predict_post",
+        "parameters": [
+          {
+            "name": "region_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Region Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/regions/{region_name}/alerts": {
+      "get": {
+        "tags": [
+          "regions"
+        ],
+        "summary": "Get Region Alerts",
+        "description": "Get alert history for a specific region.\n\nArgs:\n    region_name: Name of the region\n    \nReturns:\n    List of alerts for the region",
+        "operationId": "get_region_alerts_regions__region_name__alerts_get",
+        "parameters": [
+          {
+            "name": "region_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Region Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "title": "Response Get Region Alerts Regions  Region Name  Alerts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/predict": {
+      "post": {
+        "tags": [
+          "predictions"
+        ],
+        "summary": "Predict Landslide Risk",
+        "description": "Predict landslide risk using custom environmental data.\n\nArgs:\n    request: Environmental parameters for prediction\n    \nReturns:\n    Prediction result with probability and risk level",
+        "operationId": "predict_landslide_risk_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PredictionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/map/risk": {
+      "get": {
+        "tags": [
+          "predictions"
+        ],
+        "summary": "Get Map Risk Levels",
+        "description": "Get risk levels for all regions for map visualization.\nProvides color-coded data: LOW (green), MEDIUM (yellow), HIGH (red).\n\nReturns:\n    MapRiskResponse with all regions and their risk levels",
+        "operationId": "get_map_risk_levels_map_risk_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapRiskResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts": {
+      "get": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Get All Alerts",
+        "description": "Get all logged alerts.\n\nReturns:\n    List of all alerts",
+        "operationId": "get_all_alerts_alerts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlertResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get All Alerts Alerts Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/region/{region_name}": {
+      "get": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Get Region Alerts",
+        "description": "Get alerts for a specific region.\n\nArgs:\n    region_name: Name of the region\n    \nReturns:\n    List of alerts for the region",
+        "operationId": "get_region_alerts_alerts_region__region_name__get",
+        "parameters": [
+          {
+            "name": "region_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Region Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AlertResponse"
+                  },
+                  "title": "Response Get Region Alerts Alerts Region  Region Name  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/high-risk": {
+      "get": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Get High Risk Alerts",
+        "description": "Get all high-risk alerts.\n\nReturns:\n    List of high-risk alerts only",
+        "operationId": "get_high_risk_alerts_alerts_high_risk_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlertResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get High Risk Alerts Alerts High Risk Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/predict": {
+      "post": {
+        "tags": [
+          "prediction"
+        ],
+        "summary": "Predict Landslide",
+        "description": "Predict landslide risk using provided environmental parameters.\n\nRequest body should contain:\n- rainfall_6h: Rainfall in last 6 hours (mm)\n- rainfall_12h: Rainfall in last 12 hours (mm) \n- rainfall_24h: Rainfall in last 24 hours (mm)\n- soil_saturation_index: Soil saturation (0-1)\n- slope_stability_factor: Slope stability (0-1)\n- terrain_vulnerability_index: Terrain vulnerability (0-1)\n\nReturns:\n    Prediction result with probability and risk level",
+        "operationId": "predict_landslide_api_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PredictionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "root"
+        ],
+        "summary": "Read Root",
+        "description": "Root endpoint with API information",
+        "operationId": "read_root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlertResponse": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "risk_level": {
+            "type": "string",
+            "title": "Risk Level"
+          },
+          "probability": {
+            "type": "number",
+            "title": "Probability"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "risk_level",
+          "probability",
+          "timestamp"
+        ],
+        "title": "AlertResponse",
+        "description": "Response for alert object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MapRiskResponse": {
+        "properties": {
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionResponse"
+            },
+            "type": "array",
+            "title": "Regions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regions"
+        ],
+        "title": "MapRiskResponse",
+        "description": "Response for map risk data"
+      },
+      "MessageResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "MessageResponse",
+        "description": "Generic message response"
+      },
+      "PredictionRequest": {
+        "properties": {
+          "rainfall_6h": {
+            "type": "number",
+            "maximum": 200.0,
+            "minimum": 0.0,
+            "title": "Rainfall 6H",
+            "description": "Rainfall in last 6 hours (mm)"
+          },
+          "rainfall_12h": {
+            "type": "number",
+            "maximum": 250.0,
+            "minimum": 0.0,
+            "title": "Rainfall 12H",
+            "description": "Rainfall in last 12 hours (mm)"
+          },
+          "rainfall_24h": {
+            "type": "number",
+            "maximum": 500.0,
+            "minimum": 0.0,
+            "title": "Rainfall 24H",
+            "description": "Rainfall in last 24 hours (mm)"
+          },
+          "soil_saturation_index": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Soil Saturation Index",
+            "description": "Soil saturation index (0-1)"
+          },
+          "slope_stability_factor": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Slope Stability Factor",
+            "description": "Slope stability factor (0-1)"
+          },
+          "terrain_vulnerability_index": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Terrain Vulnerability Index",
+            "description": "Terrain vulnerability index (0-1)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rainfall_6h",
+          "rainfall_12h",
+          "rainfall_24h",
+          "soil_saturation_index",
+          "slope_stability_factor",
+          "terrain_vulnerability_index"
+        ],
+        "title": "PredictionRequest",
+        "description": "Request body for custom prediction"
+      },
+      "PredictionResponse": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "landslide_probability": {
+            "type": "number",
+            "title": "Landslide Probability"
+          },
+          "risk_level": {
+            "type": "string",
+            "title": "Risk Level"
+          },
+          "environmental_data": {
+            "type": "object",
+            "title": "Environmental Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "landslide_probability",
+          "risk_level",
+          "environmental_data"
+        ],
+        "title": "PredictionResponse",
+        "description": "Response for prediction results"
+      },
+      "RegionResponse": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lon": {
+            "type": "number",
+            "title": "Lon"
+          },
+          "risk_level": {
+            "type": "string",
+            "title": "Risk Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "lat",
+          "lon",
+          "risk_level"
+        ],
+        "title": "RegionResponse",
+        "description": "Response for region with risk level"
+      },
+      "UserRegistrationRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name",
+            "description": "User's full name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "User's email address"
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 10,
+            "title": "Phone",
+            "description": "User's phone number"
+          },
+          "region": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Region",
+            "description": "Monitoring region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "phone",
+          "region"
+        ],
+        "title": "UserRegistrationRequest",
+        "description": "Request body for user registration"
+      },
+      "UserResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "name",
+          "email",
+          "phone",
+          "region"
+        ],
+        "title": "UserResponse",
+        "description": "Response for user object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

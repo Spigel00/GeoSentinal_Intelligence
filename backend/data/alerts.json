@@ -14,175 +14,25 @@
   {
     "region": "Himachal Pradesh",
     "risk_level": "HIGH",
-    "probability": 0.797,
-    "timestamp": "2026-03-06T21:34:16.309989"
+    "probability": 0.705,
+    "timestamp": "2026-03-07T00:22:36.401951"
   },
   {
-    "region": "Western Ghats",
+    "region": "Sikkim",
     "risk_level": "HIGH",
-    "probability": 0.867,
-    "timestamp": "2026-03-06T21:34:16.338762"
+    "probability": 0.906,
+    "timestamp": "2026-03-07T00:25:17.040941"
   },
   {
-    "region": "Arunachal Corridor",
+    "region": "Arunachal Pradesh",
     "risk_level": "HIGH",
-    "probability": 0.749,
-    "timestamp": "2026-03-06T21:35:46.464033"
+    "probability": 0.719,
+    "timestamp": "2026-03-07T00:25:17.041737"
   },
   {
-    "region": "Western Ghats",
-    "risk_level": "HIGH",
-    "probability": 0.768,
-    "timestamp": "2026-03-06T21:35:46.496329"
-  },
-  {
-    "region": "Nilgiris",
-    "risk_level": "HIGH",
-    "probability": 0.733,
-    "timestamp": "2026-03-06T21:36:40.203992"
-  },
-  {
-    "region": "Arunachal Corridor",
-    "risk_level": "HIGH",
-    "probability": 0.751,
-    "timestamp": "2026-03-06T21:37:38.579694"
-  },
-  {
-    "region": "Uttarakhand",
+    "region": "Sikkim",
     "risk_level": "HIGH",
     "probability": 0.713,
-    "timestamp": "2026-03-06T21:39:54.461234"
-  },
-  {
-    "region": "Nilgiris",
-    "risk_level": "HIGH",
-    "probability": 0.709,
-    "timestamp": "2026-03-06T21:39:54.493468"
-  },
-  {
-    "region": "Western Ghats",
-    "risk_level": "HIGH",
-    "probability": 0.814,
-    "timestamp": "2026-03-06T21:45:22.449606"
-  },
-  {
-    "region": "Himachal Pradesh",
-    "risk_level": "HIGH",
-    "probability": 0.764,
-    "timestamp": "2026-03-06T21:50:49.500659"
-  },
-  {
-    "region": "Uttarakhand",
-    "risk_level": "HIGH",
-    "probability": 0.719,
-    "timestamp": "2026-03-06T21:56:59.100038"
-  },
-  {
-    "region": "Arunachal Corridor",
-    "risk_level": "HIGH",
-    "probability": 0.802,
-    "timestamp": "2026-03-06T21:56:59.158041"
-  },
-  {
-    "region": "Himachal Pradesh",
-    "risk_level": "HIGH",
-    "probability": 0.766,
-    "timestamp": "2026-03-06T21:56:59.181760"
-  },
-  {
-    "region": "Western Ghats",
-    "risk_level": "HIGH",
-    "probability": 0.733,
-    "timestamp": "2026-03-06T21:56:59.197214"
-  },
-  {
-    "region": "Arunachal Corridor",
-    "risk_level": "HIGH",
-    "probability": 0.793,
-    "timestamp": "2026-03-06T22:08:42.338245"
-  },
-  {
-    "region": "Himachal Pradesh",
-    "risk_level": "HIGH",
-    "probability": 0.913,
-    "timestamp": "2026-03-06T22:08:42.396948"
-  },
-  {
-    "region": "Western Ghats",
-    "risk_level": "HIGH",
-    "probability": 0.726,
-    "timestamp": "2026-03-06T22:08:42.415243"
-  },
-  {
-    "region": "Arunachal Corridor",
-    "risk_level": "HIGH",
-    "probability": 0.719,
-    "timestamp": "2026-03-06T22:14:54.545913"
-  },
-  {
-    "region": "Himachal Pradesh",
-    "risk_level": "HIGH",
-    "probability": 0.716,
-    "timestamp": "2026-03-06T22:14:54.617775"
-  },
-  {
-    "region": "Western Ghats",
-    "risk_level": "HIGH",
-    "probability": 0.753,
-    "timestamp": "2026-03-06T22:14:54.638993"
-  },
-  {
-    "region": "Nilgiris",
-    "risk_level": "HIGH",
-    "probability": 0.762,
-    "timestamp": "2026-03-06T22:20:11.102111"
-  },
-  {
-    "region": "Western Ghats",
-    "risk_level": "HIGH",
-    "probability": 0.783,
-    "timestamp": "2026-03-06T22:20:11.178053"
-  },
-  {
-    "region": "Uttarakhand",
-    "risk_level": "HIGH",
-    "probability": 0.83,
-    "timestamp": "2026-03-06T22:25:14.177150"
-  },
-  {
-    "region": "Uttarakhand",
-    "risk_level": "HIGH",
-    "probability": 0.887,
-    "timestamp": "2026-03-06T22:33:29.337149"
-  },
-  {
-    "region": "Arunachal Corridor",
-    "risk_level": "HIGH",
-    "probability": 0.715,
-    "timestamp": "2026-03-06T22:33:29.390342"
-  },
-  {
-    "region": "Nilgiris",
-    "risk_level": "HIGH",
-    "probability": 0.749,
-    "timestamp": "2026-03-06T22:33:29.418467"
-  },
-  {
-    "region": "Western Ghats",
-    "risk_level": "HIGH",
-    "probability": 0.743,
-    "timestamp": "2026-03-06T22:33:29.441284"
-  },
-  {
-    "region": "Arunachal Corridor",
-    "risk_level": "HIGH",
-    "probability": 0.781,
-    "timestamp": "2026-03-06T22:43:29.837753"
-  },
-  {
-    "region": "Nilgiris",
-    "risk_level": "HIGH",
-    "probability": 0.729,
-    "timestamp": "2026-03-06T22:43:29.855038"
+    "timestamp": "2026-03-07T00:26:19.577324"
   }
 ]

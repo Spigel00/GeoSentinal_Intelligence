@@ -18,13 +18,15 @@ class LandslidePredictor:
         "HIGH": float('inf')
     }
     
-    def __init__(self, model_path: str = "model/landslide_model.pkl"):
+    def __init__(self, model_path: str = None):
         """
         Initialize predictor and load model.
         
         Args:
-            model_path: Path to trained model file
+            model_path: Path to trained model file (defaults to MODEL_PATH env var)
         """
+        if model_path is None:
+            model_path = os.getenv("MODEL_PATH", "model/landslide_model.pkl")
         self.model_path = model_path
         self.model = None
         self.load_model()

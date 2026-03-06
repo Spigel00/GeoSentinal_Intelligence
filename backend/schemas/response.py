@@ -1,6 +1,5 @@
 from pydantic import BaseModel
-from typing import List
-from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 
 class PredictionResponse(BaseModel):
@@ -45,3 +44,24 @@ class MessageResponse(BaseModel):
     """Generic message response"""
     message: str
     success: bool = True
+
+
+class RegionWeatherResponse(BaseModel):
+    """Weather details mapped to a configured region."""
+    region: str
+    lat: float
+    lon: float
+    success: bool
+    weather_data: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
+class RegionsWeatherBatchResponse(BaseModel):
+    """Batch weather response for all configured regions."""
+    source: str
+    generated_at: str
+    total_regions: int
+    success_count: int
+    failure_count: int
+    degraded: bool = False
+    regions: List[RegionWeatherResponse]
