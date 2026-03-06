@@ -1,0 +1,25 @@
+app:
+  name: "GeoSentinel Backend"
+  version: "1.0.0"
+  debug: true
+  
+server:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+
+model:
+  path: "model/landslide_model.pkl"
+  
+data:
+  users_file: "data/users.json"
+  alerts_file: "data/alerts.json"
+  regions_file: "data/regions.json"
+
+alerts:
+  high_risk_threshold: 0.7
+  enable_email: false
+  enable_sms: false
+  smtp_server: "smtp.gmail.com"
+  smtp_port: 587
+  from_email: "geosEntinel@example.com"

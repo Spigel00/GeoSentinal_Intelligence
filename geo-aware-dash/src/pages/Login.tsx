@@ -86,7 +86,7 @@ const Login = () => {
 
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            {error && (
+            {error && ( 
               <Alert variant="destructive" className="py-2">
                 <AlertCircle className="h-3.5 w-3.5" />
                 <AlertDescription className="text-xs">{error}</AlertDescription>
