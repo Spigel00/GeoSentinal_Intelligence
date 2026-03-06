@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Shield, Clock, Settings } from "lucide-react";
-import { ArchitectureFlow } from "@/components/ArchitectureFlow";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Shield, Clock, Settings, LogOut, User } from "lucide-react";
 import { LocationInput } from "@/components/LocationInput";
 import { RiskMap } from "@/components/RiskMap";
 import { AnalyticsCharts } from "@/components/AnalyticsCharts";
@@ -10,11 +10,34 @@ import { InfrastructureStatus } from "@/components/InfrastructureStatus";
 import { EmergencyPanel } from "@/components/EmergencyPanel";
 import { HistoricalDataViewer } from "@/components/HistoricalDataViewer";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [location, setLocation] = useState("Munnar, Kerala");
   const [activeView, setActiveView] = useState<"overview" | "emergency" | "history">("overview");
+  const [user, setUser] = useState<{ name: string; role: string; email: string } | null>(null);
+
+  useEffect(() => {
+    // Check authentication
+    const isAuthenticated = localStorage.getItem("geosentinel_auth");
+    const userData = localStorage.getItem("geosentinel_user");
+    
+    if (!isAuthenticated) {
+      navigate("/login");
+    } else if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("geosentinel_auth");
+    localStorage.removeItem("geosentinel_user");
+    navigate("/login");
+  };
+
+  if (!user) {
+    return null; // Loading state while checking auth
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -59,24 +82,37 @@ const Index = () => {
               <span>LIVE</span>
               <span className="w-1.5 h-1.5 rounded-full bg-risk-low animate-pulse" />
             </div>
+            
+            {/* User Info */}
+            <div className="flex items-center gap-2 px-2 py-1 rounded bg-secondary/50 border border-border">
+              <User className="w-3 h-3 text-primary" />
+              <div className="text-left">
+                <div className="text-[9px] font-mono font-semibold text-foreground">{user.name}</div>
+                <div className="text-[7px] font-mono text-muted-foreground">{user.role}</div>
+              </div>
+            </div>
+            
             <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
               <Settings className="h-3.5 w-3.5" />
+            </Button>
+            
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="h-7 w-7 p-0 text-risk-medium hover:text-risk-high"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <LogOut className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel — Architecture */}
-        <aside className="w-80 border-r border-border bg-card/30 flex-shrink-0 overflow-y-auto">
-          <ArchitectureFlow />
-        </aside>
-
-        {/* Right Panel — Dashboard */}
-        <main className="flex-1 overflow-y-auto p-4 space-y-3">
-          {/* Location Input */}
-          <LocationInput onLocationSubmit={setLocation} currentLocation={location} />
+      {/* Main Content - Full Width */}
+      <main className="flex-1 overflow-y-auto p-4 space-y-3 max-w-[1800px] mx-auto w-full">
+        {/* Location Input */}
+        <LocationInput onLocationSubmit={setLocation} currentLocation={location} />
 
           {/* Overview View */}
           {activeView === "overview" && (
@@ -136,8 +172,7 @@ const Index = () => {
               <InfrastructureStatus />
             </>
           )}
-        </main>
-      </div>
+      </main>
     </div>
   );
 };

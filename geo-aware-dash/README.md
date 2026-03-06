@@ -1,53 +1,83 @@
 # GeoSentinel - Landslide Early Warning System
 
 <p align="center">
-  <strong>An advanced AI-powered landslide early warning system providing real-time risk assessment and emergency response coordination.</strong>
+  <strong>An advanced AI-powered landslide early warning system providing real-time risk assessment, user management, and emergency response coordination.</strong>
 </p>
 
 ## 🎯 Project Overview
 
-GeoSentinel is a comprehensive landslide early warning dashboard that leverages machine learning (XGBoost), multi-source data integration, and real-time monitoring to predict and prevent landslide disasters. The system provides actionable insights for disaster management teams, emergency responders, and local authorities.
+GeoSentinel is a comprehensive landslide early warning dashboard that leverages machine learning models, real-time API integration, and interactive data visualization to predict and prevent landslide disasters. The system provides actionable insights for disaster management teams, emergency responders, and local authorities through a modern React-based frontend connected to a FastAPI backend.
 
 ## ✨ Key Features
 
-### 📍 **Interactive Risk Mapping**
-- Real-time visualization of risk zones with color-coded severity indicators
-- Interactive tooltips showing detailed sensor data for each zone
-- Live sensor network status (rainfall, soil moisture, displacement)
-- Topographic overlay with visual risk indicators
-- Zone-wise statistics and sensor counts
+### 📍 **Interactive Risk Mapping (Leaflet.js)**
+- Real-time visualization of monitoring regions with color-coded risk levels
+- Interactive map markers with popup details
+- Click on regions to view: risk probability, coordinates, environmental conditions
+- Risk circle overlays showing affected radius (5km)
+- Automatic map updates every 10 minutes
+- Zoom, pan, and full-screen controls
 
-### 🚨 **Advanced Alert System**
-- Multi-severity alert classification (Low, Medium, High, Critical)
-- Real-time alert filtering and sorting
-- Alert acknowledgment system for tracking response
-- Export functionality to CSV for record-keeping
-- Time-stamped notifications with zone information
+### 🚨 **Advanced Alert Management**
+- Complete alert history with filtering by risk level and region
+- Real-time HIGH-risk alert notifications
+- Sortable alert table with timestamp, probability, and region data
+- Detailed alert modal showing environmental trigger conditions
+- CSV export functionality for reports
+- Alert statistics dashboard
 
-### 🆘 **Emergency Response Panel**
-- Emergency contact directory with availability status
-- Evacuation route status (Clear, Congested, Blocked)
-- Safe zone capacity monitoring
-- One-click emergency protocol activation
-- Real-time route distance and capacity tracking
+### 👥 **User Management System**
+- Register users with region-based subscriptions
+- Full CRUD operations (Create, Read, Delete)
+- Search and filter users by name, email, phone, or region
+- Real-time user table with pagination support
+- Track which users receive alerts for which regions
+- User statistics and active region monitoring
 
-### 📊 **Analytics Dashboard**
-- 12-month rainfall trend analysis
-- Risk index progression tracking
-- ML model performance metrics (Accuracy, F1 Score, Precision, Recall)
-- Visual data representations with historical comparisons
+### 🔮 **Custom Prediction Engine**
+- Interactive prediction form with 6 environmental parameters:
+  - Rainfall: 6h, 12h, 24h (0-400mm range)
+  - Soil Saturation: 0-1 scale
+  - Slope Stability: 0-1 scale
+  - Terrain Vulnerability: 0-1 scale
+- Real-time slider input with numerical value display
+- Instant risk classification (LOW < 40%, MEDIUM 40-70%, HIGH > 70%)
+- Confidence score display
+- Region-based batch prediction support
+- Reset and export prediction results
 
-### 🌤️ **Enhanced Weather Forecasting**
-- 5-day weather forecast with risk assessment
-- High-risk day indicators and warnings
-- Wind speed, temperature, and rainfall predictions
-- Cumulative rainfall calculations
-- Visual weather icons and risk indicators
+### 📊 **Analytics & Statistics**
+- Risk distribution pie chart (LOW/MEDIUM/HIGH regions)
+- Regional probability bar chart
+- 7-day alert timeline with trend analysis
+- Key performance metrics:
+  - Total regions and active region count
+  - HIGH-risk alert percentage
+  - User registration statistics
+  - Total alerts generated
+- Visual data representations using Recharts library
 
-### 🏗️ **Infrastructure Monitoring**
-- Real-time system health monitoring
-- Component-wise status tracking (Operational, Degraded, Critical)
-- Load percentage visualization with progress bars
+### 🗺️ **Dedicated Map View Page**
+- Full-screen interactive map experience
+- Region statistics cards (HIGH/MEDIUM/LOW counts)
+- Real-time data refresh button
+- Leaflet-powered mapping with OpenStreetMap tiles
+- Mobile-responsive design
+
+### 🆘 **Enhanced Dashboard**
+- Welcome screen with real-time system status
+- Key metrics overview (Active Regions, HIGH-Risk Alerts, Total Alerts, Users)
+- Recent HIGH-risk alerts feed
+- Quick action buttons to all major features
+- Regional risk overview cards with live data
+- Last updated timestamp
+
+### ⚙️ **Settings & Configuration**
+- Notification preferences (Browser, Email, SMS)
+- API endpoint configuration
+- User profile management
+- System information display
+- Connection status monitoring
 - Uptime statistics and performance metrics
 - Sensor network, API, database, and ML service monitoring
 
@@ -90,60 +120,161 @@ npm run dev
 
 The application will be available at `http://localhost:5173`
 
-### Build for Production
+### Backend Setup (Required)
+
+The frontend requires the FastAPI backend to be running:
 
 ```bash
-npm run build
-npm run preview
+# Backend should be running on port 8000
+cd backend
+source venv/bin/activate   # On Windows: venv\Scripts\activate
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-## 🎨 User Interface
+Backend API will be available at `http://localhost:8000`
 
-### Three Main Views
+### Environment Variables
 
-1. **Overview Mode**
-   - Complete dashboard with all widgets
-   - Risk map, analytics, alerts, forecasts
-   - Infrastructure status at a glance
+Create a `.env` file in the project root:
 
-2. **Emergency Mode**
-   - Emergency response panel prioritized
-   - Evacuation routes and safe zones
-   - Critical alerts and weather forecast
-   - Quick access to emergency contacts
-
-3. **History Mode**
-   - Historical incident analysis
-   - Yearly trend comparisons
-   - System performance evolution
-   - Long-term pattern identification
+```env
+VITE_API_URL=http://localhost:8000
+```
 
 ## 🧠 Technology Stack
 
-- **Frontend Framework**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **UI Library**: shadcn/ui with Tailwind CSS
-- **State Management**: React Hooks
-- **Routing**: React Router
-- **Data Visualization**: Custom SVG components
-- **Styling**: Tailwind CSS with custom animations
-- **Icons**: Lucide React
+### Frontend
+- **Framework**: React 18.3.1 with TypeScript 5.8.3
+- **Build Tool**: Vite 5.4.19 with SWC
+- **UI Library**: shadcn/ui (Radix UI primitives)
+- **Styling**: Tailwind CSS 3.4.17
+- **State Management**: TanStack Query (React Query) 5.83.0
+- **Routing**: React Router DOM 6.30.1
+- **Mapping**: Leaflet.js + React-Leaflet 4.2.1
+- **Charts**: Recharts for analytics visualization
+- **HTTP Client**: Axios for API communication
+- **Date Handling**: date-fns for timestamp formatting
+- **Icons**: Lucide React 0.462.0
+- **Form Management**: React Hook Form 7.61.1
 
-## 🛠️ Tech Stack Details
+### Backend Integration
+- **API**: FastAPI REST API (Python)
+- **Base URL**: http://localhost:8000 (configurable)
+- **Authentication**: localStorage-based token system
+- **Data Fetching**: Automatic re-fetch with stale-time caching
+- **Error Handling**: Axios interceptors with retry logic
 
-### Core Technologies
-- **Machine Learning**: XGBoost multi-class classification model
-- **Data Sources**: 
-  - Satellite (InSAR, Optical Imagery, SAR)
-  - Weather APIs (Rainfall, Soil Moisture, Temperature)
-  - Terrain Data (Slope, Soil Type, Land Cover)
-  - IoT Sensors (Piezometers, Inclinometers, Tilt Sensors)
+### Key Libraries & Tools
+- **Validation**: Zod schema validation
+- **Testing**: Vitest 3.2.4 + Testing Library
+- **Code Quality**: ESLint + TypeScript strict mode
+- **Notifications**: Sonner toast notifications
 
-### System Architecture
-- **Data Processing**: Feature engineering, normalization, spatial interpolation
-- **Real-time Inference**: Probability calibration and live predictions
-- **Storage**: Time-series database with geospatial indexing
-- **API Services**: REST endpoints and WebSocket streaming
+## 📡 API Integration
+
+### Endpoints Used
+
+```javascript
+// Users
+POST   /users/register          // Register new user
+GET    /users/                   // Get all users
+GET    /users/{user_id}          // Get specific user
+DELETE /users/{user_id}          // Delete user
+
+// Predictions
+POST   /predict                  // Custom prediction with 6 parameters
+GET    /map/risk                 // Get all regions with risk levels
+POST   /regions/{region_name}/predict  // Region-specific prediction
+GET    /regions/                 // Get all monitored regions
+GET    /regions/{region_name}/alerts   // Region alert history
+
+// Alerts
+GET    /alerts/                  // Get all alerts
+GET    /alerts/region/{region_name}    // Alerts by region
+GET    /alerts/high-risk         // HIGH-risk alerts only
+
+// Health
+GET    /health                   // Server health check
+GET    /                          // API information
+```
+
+### Data Flow Architecture
+
+```
+User Action → API Service → Axios Request → FastAPI Backend
+                                                ↓
+UI Update ← React Query Cache ← Response Processing ← ML Model/Database
+```
+
+### Custom Hooks
+
+- `useRegions()` - Fetch and monitor all regions
+- `useMapRiskLevels()` - Get map data with auto-refresh (10 min)
+- `useUsers()` - User management operations
+- `useAlerts()` - Alert data with filtering
+- `useHighRiskAlerts()` - Priority alerts (3 min refresh)
+- `useMakePrediction()` - Custom prediction mutations
+
+## 🎨 User Interface
+
+### Navigation Structure
+
+- **Dashboard** - Overview with key metrics and recent alerts
+- **Map View** - Full-screen interactive Leaflet map
+- **Users** - User registration and management
+- **Predictions** - Custom prediction tool with sliders
+- **Alerts** - Alert history with filtering and export
+- **Analytics** - Charts and statistical analysis
+- **Settings** - App configuration and preferences
+- **API Console** (optional) - Developer testing tool
+
+### Authentication Flow
+
+1. Login/Register pages (demo mode enabled)
+2. Token stored in localStorage
+3. MainLayout wrapper with sidebar navigation
+4. Protected routes with automatic redirect
+5. User info displayed in sidebar header
+
+## 🧩 Component Architecture
+
+### Page Components
+- `Dashboard.tsx` - Main overview dashboard
+- `MapView.tsx` - Interactive map with region pins
+- `Users.tsx` - User CRUD operations
+- `Predictions.tsx` - Prediction form with sliders
+- `Alerts.tsx` - Alert table with modal details
+- `Analytics.tsx` - Charts and statistics
+- `Settings.tsx` - App configuration
+
+### Shared Components
+- `AppSidebar` - Navigation menu with user info
+- `MainLayout` - Protected route wrapper with auth check
+- `InteractiveMap` - Leaflet map with markers and popups
+- `RiskMap`, `AlertCenter`, `ForecastPanel` (legacy components)
+
+### UI Components (shadcn/ui)
+- 40+ pre-built accessible components
+- Full TypeScript support
+- Customizable with Tailwind
+
+## 🛠️ Backend Architecture
+
+### Machine Learning Model
+- **Algorithm**: XGBoost multi-class classification
+- **Features**: 6 environmental parameters
+- **Output**: Risk probability (0-1) + confidence score
+- **Classification**:
+  - LOW: probability < 0.40
+  - MEDIUM: probability 0.40-0.70
+  - HIGH: probability > 0.70
+
+### Data Sources Integration
+- Satellite data (InSAR, Optical, SAR)
+- Weather APIs (rainfall, temperature, soil moisture)
+- Terrain analysis (slope, soil type, land cover)
+- IoT sensors (piezometers, inclinometers, tilt sensors)
+- Real-time data pipeline with normalization
 
 ## 📊 Model Performance
 
