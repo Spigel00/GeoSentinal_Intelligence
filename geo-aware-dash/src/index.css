@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 7%;
+    --foreground: 210 20% 90%;
+
+    --card: 220 18% 10%;
+    --card-foreground: 210 20% 90%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 210 20% 90%;
+
+    --primary: 165 80% 45%;
+    --primary-foreground: 220 20% 7%;
+
+    --secondary: 220 15% 16%;
+    --secondary-foreground: 210 20% 80%;
+
+    --muted: 220 15% 14%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 200 80% 55%;
+    --accent-foreground: 220 20% 7%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 165 80% 45%;
+
+    --radius: 0.5rem;
+
+    /* Risk level colors */
+    --risk-low: 145 70% 45%;
+    --risk-medium: 45 90% 55%;
+    --risk-high: 0 75% 55%;
+    --risk-critical: 0 90% 40%;
+
+    /* Glow effects */
+    --glow-primary: 0 0 20px hsl(165 80% 45% / 0.3);
+    --glow-accent: 0 0 20px hsl(200 80% 55% / 0.3);
+    --glow-danger: 0 0 20px hsl(0 75% 55% / 0.3);
+
+    /* Flow diagram */
+    --flow-node: 220 18% 13%;
+    --flow-node-border: 220 15% 22%;
+    --flow-connector: 165 80% 45%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', sans-serif;
+  }
+  code, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .glow-primary {
+    box-shadow: var(--glow-primary);
+  }
+  .glow-accent {
+    box-shadow: var(--glow-accent);
+  }
+  .glow-danger {
+    box-shadow: var(--glow-danger);
+  }
+  .flow-node {
+    @apply bg-[hsl(var(--flow-node))] border border-[hsl(var(--flow-node-border))] rounded-lg p-3;
+  }
+  .risk-low {
+    @apply text-[hsl(var(--risk-low))];
+  }
+  .risk-medium {
+    @apply text-[hsl(var(--risk-medium))];
+  }
+  .risk-high {
+    @apply text-[hsl(var(--risk-high))];
+  }
+  .risk-bg-low {
+    @apply bg-[hsl(var(--risk-low)/0.15)] text-[hsl(var(--risk-low))];
+  }
+  .risk-bg-medium {
+    @apply bg-[hsl(var(--risk-medium)/0.15)] text-[hsl(var(--risk-medium))];
+  }
+  .risk-bg-high {
+    @apply bg-[hsl(var(--risk-high)/0.15)] text-[hsl(var(--risk-high))];
+  }
+
+  .scanline {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(165 80% 45% / 0.03) 2px,
+      hsl(165 80% 45% / 0.03) 4px
+    );
+  }
+}
