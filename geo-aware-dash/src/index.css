@@ -118,3 +118,20 @@
     );
   }
 }
+
+@layer utilities {
+  .animate-pulse-glow {
+    animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 10px hsl(var(--risk-high) / 0.5);
+    }
+    50% {
+      opacity: 0.7;
+      box-shadow: 0 0 20px hsl(var(--risk-high) / 0.8);
+    }
+  }
+}
