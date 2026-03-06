@@ -6,10 +6,19 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 import json
 import os
-from schemas.response import RegionResponse, PredictionResponse, MapRiskResponse
+from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from schemas.response import (
+    MapRiskResponse,
+    PredictionResponse,
+    RegionResponse,
+    RegionWeatherResponse,
+    RegionsWeatherBatchResponse,
+)
 from services.simulator import EnvironmentalSimulator
 from services.predictor import LandslidePredictor
 from services.alert_service import AlertService
+from services.weather_client import WeatherClient
 
 router = APIRouter(prefix="/regions", tags=["regions"])
 
@@ -57,6 +66,106 @@ def get_all_regions():
         ))
     
     return result
+
+
+@router.get("/live-weather", response_model=RegionsWeatherBatchResponse)
+def get_live_weather_for_regions(mock: bool = False):
+    """
+    Fetch live weather data for all configured regions.
+    
+    Query params:
+        mock: If True, return simulated weather data instead of calling real API
+    """
+    regions = load_regions()
+    weather_client = WeatherClient()
+
+    if not weather_client.is_configured():
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "INDIAN_WEATHER_API_KEY is not configured. "
+                "Set it in your environment or .env before calling this endpoint."
+            ),
+        )
+
+    weather_results: List[RegionWeatherResponse] = []
+
+    if mock:
+        for region in regions:
+            name = region["region"]
+            lat = region["lat"]
+            lon = region["lon"]
+            env_data = EnvironmentalSimulator.simulate_environmental_data()
+            weather_data = {
+                "location": {"name": name, "lat": lat, "lon": lon},
+                "current": {
+                    "temp_c": round(15 + (lat % 10), 1),
+                    "condition": "Partly cloudy",
+                    "humidity": int(env_data["soil_saturation_index"] * 100),
+                    "precip_mm": env_data["rainfall_24h"],
+                    "wind_kph": round(10 + (lon % 15), 1),
+                },
+                "note": "Mock data - set mock=false for live API data"
+            }
+            weather_results.append(
+                RegionWeatherResponse(
+                    region=name,
+                    lat=lat,
+                    lon=lon,
+                    success=True,
+                    weather_data=weather_data,
+                )
+            )
+    else:
+        max_workers = max(1, int(os.getenv("INDIAN_WEATHER_MAX_WORKERS", "5")))
+
+        def fetch_region_weather(region: dict) -> RegionWeatherResponse:
+            name = region["region"]
+            lat = region["lat"]
+            lon = region["lon"]
+            try:
+                weather_data = weather_client.get_current_weather(
+                    lat=lat,
+                    lon=lon,
+                    state_name=name,
+                )
+                return RegionWeatherResponse(
+                    region=name,
+                    lat=lat,
+                    lon=lon,
+                    success=True,
+                    weather_data=weather_data,
+                )
+            except RuntimeError as exc:
+                return RegionWeatherResponse(
+                    region=name,
+                    lat=lat,
+                    lon=lon,
+                    success=False,
+                    error=str(exc),
+                )
+
+        ordered_index = {region["region"]: idx for idx, region in enumerate(regions)}
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(fetch_region_weather, region) for region in regions]
+            for future in as_completed(futures):
+                weather_results.append(future.result())
+
+        weather_results.sort(key=lambda r: ordered_index.get(r.region, 0))
+
+    source = "Mock Weather Data" if mock else "https://api.data.gov.in"
+    total_regions = len(weather_results)
+    success_count = sum(1 for region in weather_results if region.success)
+    failure_count = total_regions - success_count
+    return RegionsWeatherBatchResponse(
+        source=source,
+        generated_at=datetime.utcnow().isoformat(),
+        total_regions=total_regions,
+        success_count=success_count,
+        failure_count=failure_count,
+        degraded=failure_count > 0,
+        regions=weather_results,
+    )
 
 
 @router.post("/{region_name}/predict", response_model=PredictionResponse)

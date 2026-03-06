@@ -10,5 +10,29 @@
     "risk_level": "HIGH",
     "probability": 0.71,
     "timestamp": "2026-03-06T18:04:07.021181"
+  },
+  {
+    "region": "Himachal Pradesh",
+    "risk_level": "HIGH",
+    "probability": 0.705,
+    "timestamp": "2026-03-07T00:22:36.401951"
+  },
+  {
+    "region": "Sikkim",
+    "risk_level": "HIGH",
+    "probability": 0.906,
+    "timestamp": "2026-03-07T00:25:17.040941"
+  },
+  {
+    "region": "Arunachal Pradesh",
+    "risk_level": "HIGH",
+    "probability": 0.719,
+    "timestamp": "2026-03-07T00:25:17.041737"
+  },
+  {
+    "region": "Sikkim",
+    "risk_level": "HIGH",
+    "probability": 0.713,
+    "timestamp": "2026-03-07T00:26:19.577324"
   }
 ]

@@ -7,9 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import os
 import sys
+from dotenv import load_dotenv
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
+
+# Load local environment variables from backend/.env
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # Import routers
 from api.users import router as users_router
@@ -17,6 +22,7 @@ from api.regions import router as regions_router
 from api.prediction import router as prediction_router
 from api.alerts import router as alerts_router
 from api.routes_predict import router as routes_predict_router
+from api.notifications import router as notifications_router
 
 # Import services
 from services.predictor import LandslidePredictor
@@ -58,6 +64,7 @@ app.include_router(regions_router)
 app.include_router(prediction_router)
 app.include_router(alerts_router)
 app.include_router(routes_predict_router)
+app.include_router(notifications_router)
 
 
 @app.get("/", tags=["root"])

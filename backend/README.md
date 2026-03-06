@@ -8,9 +8,12 @@ A FastAPI-based backend for real-time landslide risk prediction using an XGBoost
 - 🎯 **Landslide Prediction** - XGBoost-powered risk classification
 - 🌍 **Multi-Region Support** - Monitor 5+ landslide-prone regions
 - 📊 **Environmental Simulation** - Realistic weather condition generation
-- 🚨 **Alert System** - High-risk notifications via SMS/Email (mock implementation)
+- 🚨 **Alert System** - Real-time notifications via SMTP Email & Twilio SMS
+- 📧 **Email Alerts** - HTML & plain-text emails with risk details
+- 📱 **SMS Alerts** - Instant SMS via Twilio to registered users
 - 🗺️ **Map Visualization API** - Color-coded risk levels for frontend integration
 - 📁 **JSON-Based Storage** - Lightweight file-based persistence (no database required)
+- 🧪 **Notification Testing** - Built-in endpoints to test email/SMS delivery
 
 ## Technology Stack
 
@@ -34,12 +37,14 @@ backend/
 │   ├── regions.py       # Region-based predictions
 │   ├── prediction.py    # Custom predictions & map API
 │   ├── alerts.py        # Alert history queries
+│   ├── notifications.py # Notification testing endpoints
 │   └── routes_predict.py # Legacy prediction endpoint
 │
 ├── services/             # Business logic
 │   ├── predictor.py     # ML model wrapper
 │   ├── simulator.py     # Environmental data simulator
-│   └── alert_service.py # Alert handling & notifications
+│   ├── alert_service.py # Alert handling & notifications
+│   └── notification_service.py # SMTP & SMS notification engine
 │
 ├── schemas/              # Pydantic models
 │   ├── request.py       # Request models
@@ -63,6 +68,14 @@ cd backend
 pip install -r requirements.txt
 ```
 
+**Installed Libraries**:
+- FastAPI + Uvicorn - Web framework
+- XGBoost - ML model
+- Pydantic - Data validation
+- Python-dotenv - Environment config
+- Twilio - SMS notifications
+- Built-in smtplib - Email notifications
+
 ### 2. Prepare Your ML Model
 
 Place your trained XGBoost model at:
@@ -85,6 +98,15 @@ If no model file is found, the system will use **mock predictions** based on sim
 Copy `.env.example` to `.env` and update as needed:
 ```bash
 cp .env.example .env
+```
+
+Configure real-time weather API variables:
+```bash
+INDIAN_WEATHER_API_KEY=your_key_here
+INDIAN_WEATHER_BASE_URL=https://weather.indianapi.in
+INDIAN_WEATHER_ENDPOINT=/weather
+INDIAN_WEATHER_ENDPOINTS=/weather,/current,/forecast
+INDIAN_WEATHER_TIMEOUT_SECONDS=8
 ```
 
 ### 4. Run the Backend
@@ -246,6 +268,44 @@ Response:
 ]
 ```
 
+#### Get Live Weather For All Regions
+```
+GET /regions/live-weather?mock=false
+
+Query Parameters:
+  - mock (optional): Set to true for simulated weather data (default: false)
+
+Response (with mock=true):
+{
+  "source": "Mock Weather Data",
+  "generated_at": "2026-03-06T16:20:15.235901",
+  "regions": [
+    {
+      "region": "Uttarakhand",
+      "lat": 30.25,
+      "lon": 79.0,
+      "success": true,
+      "weather_data": {
+        "location": {"name": "Uttarakhand", "lat": 30.25, "lon": 79.0},
+        "current": {
+          "temp_c": 15.2,
+          "condition": "Partly cloudy",
+          "humidity": 39,
+          "precip_mm": 135.85,
+          "wind_kph": 14.0
+        },
+        "note": "Mock data - set mock=false for live API data"
+      },
+      "error": null
+    }
+  ]
+}
+```
+
+**Mock Mode (`?mock=true`)**: Use this during development/testing when the weather API key has access issues. It generates realistic weather data based on environmental simulation.
+
+When one region fails with real API, the endpoint still returns the remaining regions with an error string only for failed entries.
+
 ---
 
 ### 🗺️ Map Visualization
@@ -335,7 +395,141 @@ Response:
 
 ---
 
-### 📊 Health Check
+### � Notifications
+
+#### Get Notification Status
+Check current SMTP and SMS configuration status.
+
+```
+GET /notifications/status
+
+Response:
+{
+  "email": {
+    "enabled": true,
+    "configured": true,
+    "server": "smtp.gmail.com",
+    "port": 587,
+    "from_email": "geosEntinel@example.com"
+  },
+  "sms": {
+    "enabled": true,
+    "configured": true,
+    "provider": "Twilio",
+    "from_phone": "+1234567890"
+  }
+}
+```
+
+#### Test Email Notification
+```
+POST /notifications/test/email
+Content-Type: application/json
+
+{
+  "to_email": "test@example.com",
+  "subject": "Test Email",
+  "message": "This is a test email from GeoSentinel"
+}
+
+Response:
+{
+  "status": "success",
+  "message": "Email sent to test@example.com",
+  "mode": "live"
+}
+```
+
+#### Test SMS Notification
+```
+POST /notifications/test/sms
+Content-Type: application/json
+
+{
+  "to_phone": "+919999999999",
+  "message": "This is a test SMS from GeoSentinel"
+}
+
+Response:
+{
+  "status": "success",
+  "message": "SMS sent to +919999999999",
+  "mode": "live",
+  "message_sid": "SM..."
+}
+```
+
+#### Test Complete Alert
+Test both email and SMS for landslide alert.
+
+```
+POST /notifications/test/alert
+Content-Type: application/json
+
+{
+  "user_email": "test@example.com",
+  "user_phone": "+919999999999",
+  "user_name": "Test User",
+  "region": "Uttarakhand",
+  "probability": 0.85,
+  "risk_level": "HIGH"
+}
+
+Response:
+{
+  "status": "completed",
+  "user": "Test User",
+  "region": "Uttarakhand",
+  "probability": 0.85,
+  "risk_level": "HIGH",
+  "results": {
+    "email": {
+      "success": true,
+      "message": "Email sent to test@example.com",
+      "mode": "live"
+    },
+    "sms": {
+      "success": true,
+      "message": "SMS sent to +919999999999",
+      "mode": "live",
+      "message_sid": "SM..."
+    }
+  }
+}
+```
+
+#### Send Alert to Region Users
+Send alert to all users monitoring a specific region.
+
+```
+POST /notifications/send-region-alert/Uttarakhand?probability=0.85&risk_level=HIGH
+
+Response:
+{
+  "status": "completed",
+  "region": "Uttarakhand",
+  "users_notified": 1,
+  "results": [
+    {
+      "user": "Ashwat Kumar",
+      "email": {
+        "success": true,
+        "message": "Email sent to ashwat@example.com",
+        "mode": "live"
+      },
+      "sms": {
+        "success": true,
+        "message": "SMS sent to +919999999999",
+        "mode": "live"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### �📊 Health Check
 
 ```
 GET /health
@@ -394,34 +588,77 @@ Modify `data/regions.json` to add/remove regions.
 
 ## Alert System
 
-When a **HIGH** risk is detected:
+The system supports **real-time SMTP email and SMS notifications** via Twilio when HIGH risk is detected.
+
+### Configuration
+
+Update `.env` to enable notifications:
+
+```bash
+# Enable notifications
+ENABLE_EMAIL_ALERTS=True
+ENABLE_SMS_ALERTS=True
+
+# SMTP Configuration (Gmail example)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+FROM_EMAIL=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password  # Use App Password for Gmail
+
+# Twilio Configuration
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_PHONE_NUMBER=+1234567890  # Your Twilio phone number
+```
+
+**Note**: For Gmail, use an [App Password](https://support.google.com/accounts/answer/185833?hl=en) instead of your regular password.
+
+### How Alerts Work
+
+When a **HIGH** risk is detected (probability > 0.7):
 
 1. System finds all users subscribed to that region
-2. Sends SMS and Email notifications (mock implementation)
-3. Logs alert to `data/alerts.json`
+2. Sends SMS notifications via Twilio (if enabled)
+3. Sends Email notifications via SMTP (if enabled)
+4. Logs alert to `data/alerts.json`
+
+If notifications are disabled, the system will log the alert but won't send messages.
 
 ### SMS Alert Format
 ```
 GeoSentinel Alert
 
-High landslide risk detected in Uttarakhand.
+HIGH landslide risk in Uttarakhand!
 
-Probability: 0.82
-Please avoid vulnerable terrain.
+Probability: 82%
+Time: 10:30
+
+Avoid vulnerable terrain. Stay safe!
 ```
 
 ### Email Alert Format
 ```
-Subject: GeoSentinel Landslide Warning
+Subject: GeoSentinel HIGH Landslide Warning - Uttarakhand
 
-A high landslide risk has been detected in your region.
+Dear Ashwat Kumar,
+
+A high landslide risk has been detected in your monitored region.
 
 Region: Uttarakhand
-Probability: 0.82
 Risk Level: HIGH
-Timestamp: 2026-03-06T10:30:45
+Probability: 82.0%
+Timestamp: 2026-03-07 10:30:45
 
-Please take necessary precautions and avoid vulnerable terrain.
+RECOMMENDED ACTIONS:
+- Avoid vulnerable terrain and steep slopes
+- Stay informed about weather conditions
+- Follow local authority instructions
+- Keep emergency contacts ready
+
+This is an automated alert from the GeoSentinel Intelligence System.
+
+Stay safe,
+GeoSentinel Alerts Team
 ```
 
 ---
