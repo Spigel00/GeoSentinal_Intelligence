@@ -1,5 +1,6 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
+import { FloatingChatbot } from "@/components/FloatingChatbot";
 import { useEffect, useState } from "react";
 
 export function MainLayout() {
@@ -36,6 +37,9 @@ export function MainLayout() {
       <main className="flex-1 overflow-auto">
         <Outlet />
       </main>
+
+      {/* Floating AI Chatbot */}
+      <FloatingChatbot />
     </div>
   );
 }

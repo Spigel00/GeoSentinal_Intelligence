@@ -23,6 +23,7 @@ from api.prediction import router as prediction_router
 from api.alerts import router as alerts_router
 from api.routes_predict import router as routes_predict_router
 from api.notifications import router as notifications_router
+from api.ai import router as ai_router
 
 # Import services
 from services.predictor import LandslidePredictor
@@ -65,6 +66,7 @@ app.include_router(prediction_router)
 app.include_router(alerts_router)
 app.include_router(routes_predict_router)
 app.include_router(notifications_router)
+app.include_router(ai_router)
 
 
 @app.get("/", tags=["root"])
