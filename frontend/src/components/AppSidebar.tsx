@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Map,
@@ -13,6 +14,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import axios from "axios";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -73,6 +75,27 @@ export function AppSidebar() {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const user = JSON.parse(localStorage.getItem("geosentinel_user") || "{}");
+  const [backendStatus, setBackendStatus] = useState<'online' | 'offline'>('online');
+
+  // Check backend health every 10 seconds
+  useEffect(() => {
+    const checkBackendHealth = async () => {
+      try {
+        await axios.get('http://localhost:8000/health', { timeout: 3000 });
+        setBackendStatus('online');
+      } catch (error) {
+        setBackendStatus('offline');
+      }
+    };
+
+    // Initial check
+    checkBackendHealth();
+
+    // Set up interval for periodic checks
+    const interval = setInterval(checkBackendHealth, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("geosentinel_auth");
@@ -186,10 +209,18 @@ export function AppSidebar() {
 
         <div className="mt-3 p-2 bg-secondary/50 rounded text-center">
           <div className="flex justify-between items-center text-[10px] font-mono">
-            <span className="text-muted-foreground">Status</span>
+            <span className="text-muted-foreground">Backend</span>
             <div className="flex items-center gap-1">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-risk-low animate-pulse"></span>
-              <span className="text-risk-low font-bold">ONLINE</span>
+              <span className={cn(
+                "inline-block w-1.5 h-1.5 rounded-full",
+                backendStatus === 'online' ? "bg-risk-low animate-pulse" : "bg-red-500"
+              )}></span>
+              <span className={cn(
+                "font-bold",
+                backendStatus === 'online' ? "text-risk-low" : "text-red-500"
+              )}>
+                {backendStatus === 'online' ? 'ONLINE' : 'OFFLINE'}
+              </span>
             </div>
           </div>
         </div>
