@@ -186,7 +186,19 @@ def predict_for_region(region_name: str):
         raise HTTPException(status_code=404, detail=f"Region '{region_name}' not found")
     
     # Simulate environmental data
-    env_data = EnvironmentalSimulator.simulate_environmental_data()
+    # For Sikkim, use low-risk environmental conditions
+    if region_name == "Sikkim":
+        env_data = {
+            "rainfall_6h": 15.0,
+            "rainfall_12h": 25.0,
+            "rainfall_24h": 45.0,
+            "soil_saturation_index": 0.25,
+            "slope_stability_factor": 0.75,
+            "terrain_vulnerability_index": 0.35,
+        }
+    else:
+        env_data = EnvironmentalSimulator.simulate_environmental_data()
+    
     features = EnvironmentalSimulator.get_feature_vector(env_data)
     
     # Make prediction
