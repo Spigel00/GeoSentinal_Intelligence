@@ -1,23 +1,16 @@
 [
   {
-    "user_id": "U80AA95D6",
-    "name": "Ashwat",
-    "email": "speigelspike0@gmail.com",
-    "phone": "8778713538",
-    "region": "Northeast"
+    "user_id": "U4D61F71A",
+    "name": "Ashwat Kumar",
+    "email": "ashwat@example.com",
+    "phone": "+919999999999",
+    "region": "Uttarakhand"
   },
   {
-    "user_id": "U3860A200",
-    "name": "Me",
-    "email": "me@gmail.com",
-    "phone": "9756120478",
-    "region": "Ladakh"
-  },
-  {
-    "user_id": "UD05A0ED5",
-    "name": "Hi",
-    "email": "hi@gmail.com",
-    "phone": "8745693215",
-    "region": "Northeast"
+    "user_id": "UD47572F1",
+    "name": "Guru",
+    "email": "vvkumaran24@gmail.com",
+    "phone": "8610661635",
+    "region": "Tamil Nadu"
   }
 ]
