@@ -32,7 +32,7 @@ def get_db() -> Generator[Session, None, None]:
 def init_db() -> None:
     """Create DB tables if they do not already exist."""
     # Import models lazily so Base metadata is fully registered before create_all.
-    from models import Alert, Prediction, Region, User  # noqa: F401
+    from models import Alert, Prediction, Region, User, UserBehavior  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
 

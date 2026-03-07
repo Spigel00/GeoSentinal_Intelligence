@@ -19,6 +19,36 @@ class UserResponse(BaseModel):
     region: str
 
 
+class LoginResponse(BaseModel):
+    """Response for successful login"""
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+
+class BehaviorStatsResponse(BaseModel):
+    """Response for user behavior statistics"""
+    total_events: int
+    failed_logins: int
+    successful_logins: int
+    unique_ips: int
+    unique_devices: int
+    unique_locations: int
+    avg_time_between_actions_seconds: float
+    period_days: int
+
+
+class AnomalyDetectionResponse(BaseModel):
+    """Response for anomaly detection"""
+    is_anomalous: bool
+    anomaly_score: float
+    confidence: float
+    message: str
+    anomaly_ratio: Optional[float] = None
+    flagged_events: Optional[int] = None
+    total_events: Optional[int] = None
+
+
 class AlertResponse(BaseModel):
     """Response for alert object"""
     region: str

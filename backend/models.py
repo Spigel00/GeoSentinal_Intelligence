@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, JSON, String
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db import Base
@@ -31,10 +31,14 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     phone: Mapped[str] = mapped_column(String(32), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     region_id: Mapped[int] = mapped_column(ForeignKey("regions.id"), nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    last_login: Mapped[datetime] = mapped_column(DateTime, nullable=True)
 
     region = relationship("Region", back_populates="users")
+    behavior_events = relationship("UserBehavior", back_populates="user", cascade="all, delete-orphan")
 
 
 class Alert(Base):
@@ -60,3 +64,21 @@ class Prediction(Base):
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True, nullable=False)
 
     region = relationship("Region", back_populates="predictions")
+
+
+class UserBehavior(Base):
+    __tablename__ = "user_behaviors"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    event_type: Mapped[str] = mapped_column(String(50), index=True, nullable=False)  # login, logout, failed_login, action, region_change
+    ip_address: Mapped[str] = mapped_column(String(45), nullable=True)  # IPv4 or IPv6
+    device_fingerprint: Mapped[str] = mapped_column(String(255), nullable=True)
+    user_agent: Mapped[str] = mapped_column(String(500), nullable=True)
+    location: Mapped[str] = mapped_column(String(100), nullable=True)  # Geographic location
+    success: Mapped[bool] = mapped_column(default=True, nullable=False)
+    event_metadata: Mapped[dict] = mapped_column(JSON, nullable=True)  # Additional event metadata
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True, nullable=False)
+    
+    user = relationship("User", back_populates="behavior_events")
+

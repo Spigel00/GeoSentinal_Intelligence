@@ -17,9 +17,17 @@ class UserRegistrationRequest(BaseModel):
     name: str = Field(..., min_length=1, description="User's full name")
     email: str = Field(..., description="User's email address")
     phone: str = Field(..., min_length=10, description="User's phone number")
+    password: str = Field(..., min_length=8, description="User's password (min 8 characters)")
     region: str = Field(..., min_length=1, description="Monitoring region")
+
+
+class UserLoginRequest(BaseModel):
+    """Request body for user login"""
+    email: str = Field(..., description="User's email address")
+    password: str = Field(..., description="User's password")
 
 
 class RegionPredictionRequest(BaseModel):
     """Request body for region-based prediction (empty, uses simulated data)"""
     pass
+
