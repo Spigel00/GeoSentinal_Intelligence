@@ -1,34 +1,39 @@
-"""
-Alert history and management routes.
-Handles alert queries and management.
-"""
-from fastapi import APIRouter
+"""Alert history and management routes backed by MySQL."""
+
 from typing import List
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from db import get_db
+from models import Alert, Region
 from schemas.response import AlertResponse
-from services.alert_service import AlertService
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
-ALERTS_FILE = "data/alerts.json"
-USERS_FILE = "data/users.json"
-
 
 @router.get("", response_model=List[AlertResponse])
-def get_all_alerts():
+def get_all_alerts(db: Session = Depends(get_db)):
     """
     Get all logged alerts.
     
     Returns:
         List of all alerts
     """
-    alert_service = AlertService(ALERTS_FILE, USERS_FILE)
-    alerts = alert_service.get_all_alerts()
-    
-    return [AlertResponse(**alert) for alert in alerts]
+    alerts = db.query(Alert).order_by(Alert.timestamp.desc()).all()
+    return [
+        AlertResponse(
+            region=alert.region.name,
+            risk_level=alert.risk_level,
+            probability=alert.probability,
+            timestamp=alert.timestamp.isoformat(),
+        )
+        for alert in alerts
+    ]
 
 
 @router.get("/region/{region_name}", response_model=List[AlertResponse])
-def get_region_alerts(region_name: str):
+def get_region_alerts(region_name: str, db: Session = Depends(get_db)):
     """
     Get alerts for a specific region.
     
@@ -38,23 +43,44 @@ def get_region_alerts(region_name: str):
     Returns:
         List of alerts for the region
     """
-    alert_service = AlertService(ALERTS_FILE, USERS_FILE)
-    alerts = alert_service.get_alerts_by_region(region_name)
-    
-    return [AlertResponse(**alert) for alert in alerts]
+    alerts = (
+        db.query(Alert)
+        .join(Region, Alert.region_id == Region.id)
+        .filter(Region.name == region_name)
+        .order_by(Alert.timestamp.desc())
+        .all()
+    )
+    return [
+        AlertResponse(
+            region=alert.region.name,
+            risk_level=alert.risk_level,
+            probability=alert.probability,
+            timestamp=alert.timestamp.isoformat(),
+        )
+        for alert in alerts
+    ]
 
 
 @router.get("/high-risk", response_model=List[AlertResponse])
-def get_high_risk_alerts():
+def get_high_risk_alerts(db: Session = Depends(get_db)):
     """
     Get all high-risk alerts.
     
     Returns:
         List of high-risk alerts only
     """
-    alert_service = AlertService(ALERTS_FILE, USERS_FILE)
-    all_alerts = alert_service.get_all_alerts()
-    
-    high_risk = [alert for alert in all_alerts if alert.get("risk_level") == "HIGH"]
-    
-    return [AlertResponse(**alert) for alert in high_risk]
+    alerts = (
+        db.query(Alert)
+        .filter(Alert.risk_level == "HIGH")
+        .order_by(Alert.timestamp.desc())
+        .all()
+    )
+    return [
+        AlertResponse(
+            region=alert.region.name,
+            risk_level=alert.risk_level,
+            probability=alert.probability,
+            timestamp=alert.timestamp.isoformat(),
+        )
+        for alert in alerts
+    ]

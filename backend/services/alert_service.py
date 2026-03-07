@@ -1,11 +1,10 @@
-"""
-Alert service for sending notifications and logging alerts.
-Handles SMS, email, and alert storage.
-"""
-import json
-import os
+"""Alert service for sending notifications and persisting alerts in MySQL."""
+
 from datetime import datetime
-from typing import List, Dict
+from typing import Dict, List
+
+from db import SessionLocal
+from models import Alert, Region, User
 from services.notification_service import get_notification_service
 
 
@@ -14,8 +13,7 @@ class AlertService:
     
     HIGH_RISK_THRESHOLD = 0.7
     
-    def __init__(self, alerts_file: str = "data/alerts.json", 
-                 users_file: str = "data/users.json"):
+    def __init__(self, alerts_file: str = "data/alerts.json", users_file: str = "data/users.json"):
         """
         Initialize alert service.
         
@@ -23,35 +21,10 @@ class AlertService:
             alerts_file: Path to alerts JSON file
             users_file: Path to users JSON file
         """
+        # Kept for backward compatibility with old call sites.
         self.alerts_file = alerts_file
         self.users_file = users_file
         self.notification_service = get_notification_service()
-    
-    def load_alerts(self) -> List[Dict]:
-        """Load all alerts from JSON file"""
-        if os.path.exists(self.alerts_file):
-            try:
-                with open(self.alerts_file, 'r') as f:
-                    return json.load(f) or []
-            except:
-                return []
-        return []
-    
-    def load_users(self) -> List[Dict]:
-        """Load all users from JSON file"""
-        if os.path.exists(self.users_file):
-            try:
-                with open(self.users_file, 'r') as f:
-                    return json.load(f) or []
-            except:
-                return []
-        return []
-    
-    def save_alerts(self, alerts: List[Dict]):
-        """Save alerts to JSON file"""
-        os.makedirs(os.path.dirname(self.alerts_file), exist_ok=True)
-        with open(self.alerts_file, 'w') as f:
-            json.dump(alerts, f, indent=2)
     
     def log_alert(self, region: str, risk_level: str, probability: float):
         """
@@ -62,15 +35,25 @@ class AlertService:
             risk_level: Risk level (LOW, MEDIUM, HIGH)
             probability: Landslide probability
         """
-        alerts = self.load_alerts()
-        alert = {
-            "region": region,
-            "risk_level": risk_level,
-            "probability": probability,
-            "timestamp": datetime.now().isoformat()
-        }
-        alerts.append(alert)
-        self.save_alerts(alerts)
+        db = SessionLocal()
+        try:
+            region_row = db.query(Region).filter(Region.name == region).first()
+            if region_row is None:
+                region_row = Region(name=region, lat=0.0, lon=0.0)
+                db.add(region_row)
+                db.flush()
+
+            db.add(
+                Alert(
+                    region_id=region_row.id,
+                    risk_level=risk_level,
+                    probability=probability,
+                    timestamp=datetime.utcnow(),
+                )
+            )
+            db.commit()
+        finally:
+            db.close()
     
     def get_users_for_region(self, region: str) -> List[Dict]:
         """
@@ -82,8 +65,26 @@ class AlertService:
         Returns:
             List of user dictionaries
         """
-        users = self.load_users()
-        return [user for user in users if user.get("region") == region]
+        db = SessionLocal()
+        try:
+            users = (
+                db.query(User)
+                .join(User.region)
+                .filter(Region.name == region)
+                .all()
+            )
+            return [
+                {
+                    "user_id": user.user_id,
+                    "name": user.name,
+                    "email": user.email,
+                    "phone": user.phone,
+                    "region": user.region.name,
+                }
+                for user in users
+            ]
+        finally:
+            db.close()
     
     def send_high_risk_alert(self, region: str, probability: float) -> bool:
         """
@@ -144,7 +145,20 @@ class AlertService:
     
     def get_all_alerts(self) -> List[Dict]:
         """Get all logged alerts"""
-        return self.load_alerts()
+        db = SessionLocal()
+        try:
+            alerts = db.query(Alert).order_by(Alert.timestamp.desc()).all()
+            return [
+                {
+                    "region": alert.region.name,
+                    "risk_level": alert.risk_level,
+                    "probability": alert.probability,
+                    "timestamp": alert.timestamp.isoformat(),
+                }
+                for alert in alerts
+            ]
+        finally:
+            db.close()
     
     def get_alerts_by_region(self, region: str) -> List[Dict]:
         """
@@ -156,5 +170,23 @@ class AlertService:
         Returns:
             List of alert dictionaries
         """
-        alerts = self.load_alerts()
-        return [alert for alert in alerts if alert.get("region") == region]
+        db = SessionLocal()
+        try:
+            alerts = (
+                db.query(Alert)
+                .join(Alert.region)
+                .filter(Region.name == region)
+                .order_by(Alert.timestamp.desc())
+                .all()
+            )
+            return [
+                {
+                    "region": alert.region.name,
+                    "risk_level": alert.risk_level,
+                    "probability": alert.probability,
+                    "timestamp": alert.timestamp.isoformat(),
+                }
+                for alert in alerts
+            ]
+        finally:
+            db.close()

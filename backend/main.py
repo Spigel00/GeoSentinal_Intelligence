@@ -8,13 +8,14 @@ from contextlib import asynccontextmanager
 import os
 import sys
 from dotenv import load_dotenv
+from sqlalchemy.exc import SQLAlchemyError
 
 # Add parent directory to path for imports
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
 
-# Load local environment variables from backend/.env
-load_dotenv(os.path.join(BASE_DIR, ".env"))
+# Load local environment variables from backend/.env and override stale shell vars
+load_dotenv(os.path.join(BASE_DIR, ".env"), override=True)
 
 # Import routers
 from api.users import router as users_router
@@ -26,7 +27,9 @@ from api.notifications import router as notifications_router
 from api.ai import router as ai_router
 
 # Import services
+from db import init_db, seed_initial_data_if_empty
 from services.predictor import LandslidePredictor
+
 
 
 # Load model at startup
@@ -34,6 +37,21 @@ from services.predictor import LandslidePredictor
 async def lifespan(app: FastAPI):
     # Startup
     print("🌍 GeoSentinel Backend Starting...")
+    print("🗄️ Initializing MySQL schema...")
+    try:
+        init_db()
+        seeded = seed_initial_data_if_empty()
+        if any(seeded.values()):
+            print(
+                "✅ Seeded initial data into MySQL "
+                f"(regions={seeded['regions']}, users={seeded['users']}, alerts={seeded['alerts']})"
+            )
+        else:
+            print("✅ MySQL schema ready (no seeding needed)")
+    except SQLAlchemyError as e:
+        print(f"❌ Database initialization failed: {e}")
+        raise
+
     print("📊 Loading ML Model...")
     predictor = LandslidePredictor()
     print("✅ GeoSentinel Backend Ready!")
@@ -101,7 +119,6 @@ if __name__ == "__main__":
     print(f"📚 API Docs: http://localhost:8000/docs")
     print(f"🔄 Auto-reload: Disabled (run with uvicorn for reload)")
     print("="*60 + "\n")
-    
     uvicorn.run(
         "main:app",  # Changed to import string format
         host="0.0.0.0",

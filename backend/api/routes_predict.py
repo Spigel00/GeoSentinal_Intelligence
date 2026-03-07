@@ -3,6 +3,11 @@ Prediction routes - legacy compatibility file
 Uses main prediction router
 """
 from fastapi import APIRouter
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+from db import get_db
+from models import Prediction, Region
 from schemas.request import PredictionRequest
 from schemas.response import PredictionResponse
 from services.predictor import LandslidePredictor
@@ -12,7 +17,7 @@ router = APIRouter(prefix="/api", tags=["prediction"])
 
 
 @router.post("/predict", response_model=PredictionResponse)
-def predict_landslide(request: PredictionRequest):
+def predict_landslide(request: PredictionRequest, db: Session = Depends(get_db)):
     """
     Predict landslide risk using provided environmental parameters.
     
@@ -50,6 +55,22 @@ def predict_landslide(request: PredictionRequest):
         "slope_stability_factor": request.slope_stability_factor,
         "terrain_vulnerability_index": request.terrain_vulnerability_index
     }
+
+    custom_region = db.query(Region).filter(Region.name == "Custom Input").first()
+    if custom_region is None:
+        custom_region = Region(name="Custom Input", lat=0.0, lon=0.0)
+        db.add(custom_region)
+        db.flush()
+
+    db.add(
+        Prediction(
+            region_id=custom_region.id,
+            probability=probability,
+            risk_level=risk_level,
+            environmental_data=env_data,
+        )
+    )
+    db.commit()
     
     return PredictionResponse(
         region="Custom Input",
