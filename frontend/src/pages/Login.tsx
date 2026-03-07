@@ -1,16 +1,44 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle, User, Ambulance } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
+
+export type UserRole = "civilian" | "admin" | "rescue";
+
+const ROLES: { id: UserRole; name: string; description: string; icon: any; color: string }[] = [
+  {
+    id: "civilian",
+    name: "Civilian User",
+    description: "Receive safety advisories and alerts",
+    icon: User,
+    color: "bg-blue-500/20 border-blue-500/50 text-blue-700",
+  },
+  {
+    id: "admin",
+    name: "Defense Admin",
+    description: "Manage operations and view predictions",
+    icon: Shield,
+    color: "bg-green-500/20 border-green-500/50 text-green-700",
+  },
+  {
+    id: "rescue",
+    name: "Rescue Team",
+    description: "Emergency response coordination",
+    icon: Ambulance,
+    color: "bg-red-500/20 border-red-500/50 text-red-700",
+  },
+];
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("civilian");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -18,22 +46,28 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    
+    if (!email || !password) {
+      setError("Please enter both email and password");
+      return;
+    }
+
+    if (!selectedRole) {
+      setError("Please select a user role");
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulate authentication
     setTimeout(() => {
-      if (email && password) {
-        // Store auth token (in a real app, this would come from the server)
-        localStorage.setItem("geosentinel_auth", "authenticated");
-        localStorage.setItem("geosentinel_user", JSON.stringify({ 
-          email, 
-          name: email.split("@")[0],
-          role: "Administrator"
-        }));
-        navigate("/");
-      } else {
-        setError("Please enter both email and password");
-      }
+      localStorage.setItem("geosentinel_auth", "authenticated");
+      localStorage.setItem("geosentinel_user", JSON.stringify({ 
+        email, 
+        name: email.split("@")[0],
+        role: selectedRole,
+      }));
+      navigate("/");
       setIsLoading(false);
     }, 1000);
   };
@@ -159,6 +193,36 @@ const Login = () => {
               >
                 Forgot password?
               </button>
+            </div>
+
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <Label className="text-xs font-mono">
+                Select Your Role <span className="text-risk-high">*</span>
+              </Label>
+              <div className="grid grid-cols-1 gap-2">
+                {ROLES.map((role) => (
+                  <button
+                    key={role.id}
+                    type="button"
+                    onClick={() => setSelectedRole(role.id)}
+                    className={cn(
+                      "p-3 rounded-lg border-2 transition-all text-left",
+                      selectedRole === role.id
+                        ? `${role.color} border-current font-semibold`
+                        : "border-border bg-muted/30 hover:border-border-focus"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <role.icon className="w-4 h-4" />
+                      <div>
+                        <p className="text-xs font-semibold">{role.name}</p>
+                        <p className="text-[10px] opacity-70">{role.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
             <Button

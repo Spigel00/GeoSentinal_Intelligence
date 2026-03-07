@@ -242,6 +242,13 @@ Notifications:
 - `POST /notifications/test/alert`
 - `POST /notifications/send-region-alert/{region_name}?probability=0.85&risk_level=HIGH`
 
+AI Intelligence:
+
+- `POST /ai/chat` - Generate role-specific intelligence summary
+- `POST /ai/explain` - Explain prediction factors and risk drivers
+- `GET /ai/roles` - List available roles and descriptions
+- `GET /ai/health` - AI service health check
+
 Weather data:
 
 - `GET /regions/live-weather?mock=true`
@@ -264,22 +271,56 @@ Legacy compatibility endpoint:
 
 ## 9. Frontend Features
 
+### 9.1 Pages & Components
+
 Implemented pages include:
 
-- `Dashboard`
-- `MapView`
-- `Users`
-- `Predictions`
-- `Alerts`
-- `Analytics`
-- `Settings`
+- `Dashboard` - Overview and analytics
+- `MapView` - Interactive landslide risk visualization
+- `Users` - User management (admin-only)
+- `Predictions` - Custom risk predictions (admin-only)
+- `Alerts` - Alert history and notifications
+- `Analytics` - Data visualization and trends
+- `Settings` - User preferences and configuration
 - Auth pages: `Login`, `Register`
 
-Frontend API behavior highlights:
+### 9.2 Role-Based Access Control
+
+Three user roles with different access levels:
+
+**Civilian User** (`civilian`)
+- Access: Dashboard, MapView, Alerts, Analytics, Settings
+- Features: View public alerts, check risk levels, subscribe to notifications
+- Restrictions: Cannot access Users page or Predictions page
+
+**Defense Administrator** (`admin`)
+- Access: All pages including Users and Predictions
+- Features: Full system access, user management, advanced predictions, tactical intelligence
+- Chatbot Role: Admin-focused intelligence summaries
+
+**Rescue Team** (`rescue`)
+- Access: Dashboard, MapView, Alerts, Analytics, Settings
+- Features: View alerts, access emergency response intelligence
+- Chatbot Role: Emergency response guidance
+- Restrictions: Cannot access Users or Predictions management pages
+
+### 9.3 Floating GeoSentinel Chatbot
+
+Available on all pages in a bottom-left floating button:
+- Role-aware intelligence generation
+- Region selection with auto-loading of real prediction data
+- Real-time probability fetching from `/predict/{region}` endpoint
+- Three different response templates based on user role (civilian, admin, rescue)
+- Read-only probability display (auto-populated from actual predictions)
+- Message history with role and region metadata
+
+### 9.4 Frontend API Behavior
 
 - Uses `VITE_API_URL` with fallback to `http://localhost:8000`
 - Axios interceptors attach `Authorization` if `geosentinel_auth` exists in localStorage
+- User role stored in `geosentinel_user` localStorage object
 - On `401`, frontend clears auth keys and redirects to `/login`
+- Role-based page routing enforces access control at component level
 
 ## 10. Data and Persistence
 

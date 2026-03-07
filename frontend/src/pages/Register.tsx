@@ -1,19 +1,47 @@
 ﻿import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Shield, AlertCircle, User, Mail, Phone, MapPin } from "lucide-react";
+import { Shield, AlertCircle, User, Mail, Phone, MapPin, Users, Ambulance } from "lucide-react";
 import { registerUser, type User as ApiUser } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
+
+export type UserRole = "civilian" | "admin" | "rescue";
 
 interface RegisterFormData {
   name: string;
   email: string;
   phone: string;
   region: string;
+  role: UserRole;
 }
+
+const ROLES: { id: UserRole; name: string; description: string; icon: any; color: string }[] = [
+  {
+    id: "civilian",
+    name: "Civilian User",
+    description: "Receive safety advisories and alerts",
+    icon: User,
+    color: "bg-blue-500/20 border-blue-500/50 text-blue-700",
+  },
+  {
+    id: "admin",
+    name: "Defense Admin",
+    description: "Manage operations and view predictions",
+    icon: Shield,
+    color: "bg-green-500/20 border-green-500/50 text-green-700",
+  },
+  {
+    id: "rescue",
+    name: "Rescue Team",
+    description: "Emergency response coordination",
+    icon: Ambulance,
+    color: "bg-red-500/20 border-red-500/50 text-red-700",
+  },
+];
 
 const Register = () => {
   const navigate = useNavigate();
@@ -22,12 +50,17 @@ const Register = () => {
     email: "",
     phone: "",
     region: "",
+    role: "civilian",
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (field: keyof RegisterFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleRoleSelect = (role: UserRole) => {
+    setFormData((prev) => ({ ...prev, role }));
   };
 
   const validateForm = () => {
@@ -57,6 +90,11 @@ const Register = () => {
       return false;
     }
 
+    if (!formData.role) {
+      setError("Please select a user role");
+      return false;
+    }
+
     return true;
   };
 
@@ -81,7 +119,10 @@ const Register = () => {
       const registeredUser = await registerUser(payload);
 
       localStorage.setItem("geosentinel_auth", "authenticated");
-      localStorage.setItem("geosentinel_user", JSON.stringify(registeredUser));
+      localStorage.setItem("geosentinel_user", JSON.stringify({
+        ...registeredUser,
+        role: formData.role,
+      }));
 
       navigate("/");
     } catch (err: any) {
@@ -195,6 +236,36 @@ const Register = () => {
                   required
                   minLength={1}
                 />
+              </div>
+            </div>
+
+            {/* Role Selection */}
+            <div className="space-y-3">
+              <Label className="text-xs font-mono">
+                Select Your Role <span className="text-risk-high">*</span>
+              </Label>
+              <div className="grid grid-cols-1 gap-2">
+                {ROLES.map((role) => (
+                  <button
+                    key={role.id}
+                    type="button"
+                    onClick={() => handleRoleSelect(role.id)}
+                    className={cn(
+                      "p-3 rounded-lg border-2 transition-all text-left",
+                      formData.role === role.id
+                        ? `${role.color} border-current font-semibold`
+                        : "border-border bg-muted/30 hover:border-border-focus"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <role.icon className="w-4 h-4" />
+                      <div>
+                        <p className="text-xs font-semibold">{role.name}</p>
+                        <p className="text-[10px] opacity-70">{role.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 

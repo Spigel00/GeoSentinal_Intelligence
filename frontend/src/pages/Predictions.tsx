@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMakePrediction } from "@/hooks/usePredictions";
 import { useRegions, useRegionPrediction } from "@/hooks/useRegions";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -15,10 +17,72 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Activity, CloudRain, Droplets, Mountain, TrendingDown, AlertTriangle, RefreshCw } from "lucide-react";
+import { Activity, CloudRain, Droplets, Mountain, TrendingDown, AlertTriangle, RefreshCw, Lock } from "lucide-react";
 import type { PredictionInput } from "@/services/api";
 
 export default function PredictionsPage() {
+  const navigate = useNavigate();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+
+  // Check if user has admin role
+  useEffect(() => {
+    const user = localStorage.getItem("geosentinel_user");
+    if (user) {
+      const userData = JSON.parse(user);
+      if (userData.role === "admin") {
+        setIsAuthorized(true);
+      }
+    }
+    setIsChecking(false);
+  }, []);
+
+  if (isChecking) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="font-mono text-sm text-muted-foreground">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-3 text-center">
+            <div className="flex justify-center">
+              <div className="p-3 bg-destructive/10 rounded-full">
+                <Lock className="w-8 h-8 text-destructive" />
+              </div>
+            </div>
+            <CardTitle>Access Restricted</CardTitle>
+            <CardDescription>
+              This page is only available to Defense Administrators
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                The Predictions page requires admin privileges. Please log in with a Defense Admin account to access this feature.
+              </AlertDescription>
+            </Alert>
+            <Button
+              onClick={() => navigate("/")}
+              className="w-full"
+              variant="outline"
+            >
+              Go to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const makePrediction = useMakePrediction();
   const regionPrediction = useRegionPrediction();
   const { data: regions } = useRegions();

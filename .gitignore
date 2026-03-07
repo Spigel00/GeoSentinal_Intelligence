@@ -47,14 +47,23 @@ Thumbs.db
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Data files (optional - uncomment if needed)
-# *.csv
-# *.json
+# Node.js / Frontend
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+.parcel-cache
+coverage/
 
-# Model files (optional - uncomment if needed)
-# *.pkl
-# *.h5
-# *.pth
+# Bun
+bun.lockb
+
+# Build outputs
+build/
+out/
+
+# Data files (optional - uncomment if needed)
+
 
 # Logs
 *.log

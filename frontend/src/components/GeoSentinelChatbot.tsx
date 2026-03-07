@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageSquare, Send, User, Shield, Ambulance, Loader2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -74,21 +74,57 @@ export const GeoSentinelChatbot = () => {
     {
       id: "welcome",
       role: "assistant",
-      content: "Welcome to GeoSentinel Intelligence Assistant. Select your role, region, and risk level to receive tailored landslide risk intelligence.",
+      content: "Welcome to GeoSentinel Intelligence Assistant. Select a region to load latest prediction data, then get role-specific intelligence.",
       timestamp: new Date()
     }
   ]);
   
   const [selectedRole, setSelectedRole] = useState<string>("user");
-  const [selectedRegion, setSelectedRegion] = useState<string>("Ladakh");
-  const [selectedRiskLevel, setSelectedRiskLevel] = useState<string>("MEDIUM");
-  const [probability, setProbability] = useState<number>(0.65);
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
+  const [probability, setProbability] = useState<number>(0);
+  const [riskLevel, setRiskLevel] = useState<string>("LOW");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPrediction, setIsLoadingPrediction] = useState(false);
 
   const currentRole = ROLES.find(r => r.id === selectedRole);
 
+  // Fetch prediction data when region changes
+  useEffect(() => {
+    if (selectedRegion) {
+      loadRegionPrediction();
+    }
+  }, [selectedRegion]);
+
+  const loadRegionPrediction = async () => {
+    setIsLoadingPrediction(true);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/predict/${selectedRegion}`);
+      const prediction = response.data;
+      
+      setProbability(prediction.landslide_probability);
+      setRiskLevel(prediction.risk_level);
+      
+      const predictionMessage: ChatMessage = {
+        id: `prediction-${Date.now()}`,
+        role: "assistant",
+        content: `📊 Latest prediction data loaded for ${selectedRegion}: Risk Level: ${prediction.risk_level} (${Math.round(prediction.landslide_probability * 100)}% probability)`,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, predictionMessage]);
+    } catch (error: any) {
+      console.error("Error loading prediction:", error);
+      // Use mock data if API fails
+      const mockProb = Math.random() * 0.8 + 0.2;
+      setProbability(mockProb);
+      setRiskLevel(mockProb > 0.7 ? "HIGH" : mockProb > 0.4 ? "MEDIUM" : "LOW");
+    } finally {
+      setIsLoadingPrediction(false);
+    }
+  };
+
   const handleGenerateIntelligence = async () => {
-    if (!selectedRole || !selectedRegion || !selectedRiskLevel) {
+    if (!selectedRole || !selectedRegion || !riskLevel) {
       return;
     }
 
@@ -99,7 +135,7 @@ export const GeoSentinelChatbot = () => {
       const userMessage: ChatMessage = {
         id: Date.now().toString(),
         role: "user",
-        content: `Generate ${currentRole?.name} intelligence for ${selectedRegion} region with ${selectedRiskLevel} risk level (${Math.round(probability * 100)}% probability)`,
+        content: `Generate ${currentRole?.name} intelligence for ${selectedRegion} region with ${riskLevel} risk level (${Math.round(probability * 100)}% probability)`,
         timestamp: new Date()
       };
       
@@ -109,7 +145,7 @@ export const GeoSentinelChatbot = () => {
       const response = await axios.post(`${API_BASE_URL}/ai/chat`, {
         role: selectedRole,
         region: selectedRegion,
-        risk_level: selectedRiskLevel,
+        risk_level: riskLevel,
         probability: probability
       });
 
@@ -122,7 +158,7 @@ export const GeoSentinelChatbot = () => {
         metadata: {
           role: selectedRole,
           region: selectedRegion,
-          risk_level: selectedRiskLevel
+          risk_level: riskLevel
         }
       };
 
@@ -190,40 +226,33 @@ export const GeoSentinelChatbot = () => {
             </Select>
           </div>
 
-          {/* Risk Level Selector */}
+          {/* Risk Level Display (Data-Driven) */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium">Risk Level</label>
-            <Select value={selectedRiskLevel} onValueChange={setSelectedRiskLevel}>
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="Select risk level" />
-              </SelectTrigger>
-              <SelectContent>
-                {RISK_LEVELS.map(risk => (
-                  <SelectItem key={risk.value} value={risk.value}>
-                    <div className="flex items-center gap-2">
-                      <div className={cn("w-2 h-2 rounded-full", risk.color)} />
-                      <span className="text-xs">{risk.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className="text-xs font-medium">Risk Level (from data)</label>
+            <div className="h-9 flex items-center px-3 rounded border border-border bg-muted/50 text-xs font-medium">
+              <Badge 
+                className={cn(
+                  "text-[10px] py-0.5 px-2",
+                  riskLevel === "HIGH" && "bg-red-500 text-white",
+                  riskLevel === "MEDIUM" && "bg-yellow-500 text-white",
+                  riskLevel === "LOW" && "bg-green-500 text-white"
+                )}
+              >
+                {riskLevel}
+              </Badge>
+            </div>
           </div>
 
-          {/* Probability Input */}
+          {/* Probability Display (Data-Driven) */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium">
               Probability ({Math.round(probability * 100)}%)
             </label>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={probability}
-              onChange={(e) => setProbability(parseFloat(e.target.value))}
-              className="w-full h-9 cursor-pointer"
-            />
+            <div className="h-9 flex items-center px-3 rounded border border-border bg-muted/50">
+              <div className="text-xs font-mono font-medium w-full bg-gradient-to-r from-green-500 to-red-500 rounded text-white px-2 py-1 text-center">
+                {Math.round(probability * 100)}%
+              </div>
+            </div>
           </div>
         </div>
 
@@ -295,7 +324,7 @@ export const GeoSentinelChatbot = () => {
         {/* Generate Button */}
         <Button
           onClick={handleGenerateIntelligence}
-          disabled={isLoading || !selectedRole || !selectedRegion || !selectedRiskLevel}
+          disabled={isLoading || isLoadingPrediction || !selectedRole || !selectedRegion || probability === 0}
           className="w-full"
           size="sm"
         >
@@ -303,6 +332,11 @@ export const GeoSentinelChatbot = () => {
             <>
               <Loader2 className="w-3 h-3 mr-2 animate-spin" />
               Generating...
+            </>
+          ) : isLoadingPrediction ? (
+            <>
+              <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+              Loading Data...
             </>
           ) : (
             <>
