@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getStatistics } from "@/services/api";
+import { getStatistics, getLiveWeatherData } from "@/services/api";
 import { useHighRiskAlerts } from "@/hooks/useAlerts";
 import { useMapRiskLevels } from "@/hooks/useRegions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,9 @@ import {
   AlertTriangle, 
   TrendingUp, 
   Activity,
-  ArrowRight 
+  ArrowRight,
+  CloudRain,
+  Droplets 
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
@@ -27,6 +29,13 @@ export default function DashboardPage() {
 
   const { data: highRiskAlerts, isLoading: alertsLoading } = useHighRiskAlerts();
   const { data: regions, isLoading: regionsLoading } = useMapRiskLevels();
+  
+  const { data: liveWeather, isLoading: weatherLoading } = useQuery({
+    queryKey: ["liveWeather"],
+    queryFn: () => getLiveWeatherData(false),
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+  });
 
   const recentHighRiskAlerts = highRiskAlerts?.slice(0, 5);
 
@@ -130,6 +139,89 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Live Weather Data */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="font-mono text-base flex items-center gap-2">
+              <CloudRain className="w-4 h-4 text-primary" />
+              Live Rainfall Data
+            </CardTitle>
+            <Badge variant="outline" className="font-mono text-xs">
+              <Droplets className="w-3 h-3 mr-1" />
+              data.gov.in API
+            </Badge>
+          </div>
+          <CardDescription className="font-mono text-xs">
+            Real-time rainfall data from Indian Meteorological Department
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {weatherLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-24" />
+              ))}
+            </div>
+          ) : liveWeather && liveWeather.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {liveWeather.map((weather, index) => (
+                <div
+                  key={`${weather.region}-${index}`}
+                  className="border rounded-lg p-4 space-y-2 hover:bg-secondary/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-mono font-bold text-sm">{weather.region}</h4>
+                    <Droplets className="w-4 h-4 text-primary" />
+                  </div>
+                  {weather.weather_data ? (
+                    <div className="space-y-1">
+                      {weather.weather_data.state_ut_name && (
+                        <div className="flex justify-between text-xs font-mono">
+                          <span className="text-muted-foreground">State:</span>
+                          <span className="font-semibold">{weather.weather_data.state_ut_name}</span>
+                        </div>
+                      )}
+                      {weather.weather_data.district_name && (
+                        <div className="flex justify-between text-xs font-mono">
+                          <span className="text-muted-foreground">District:</span>
+                          <span className="font-semibold">{weather.weather_data.district_name}</span>
+                        </div>
+                      )}
+                      {weather.weather_data.avg_rainfall !== undefined && (
+                        <div className="flex justify-between text-xs font-mono">
+                          <span className="text-muted-foreground">Avg Rainfall:</span>
+                          <span className="font-bold text-primary">{weather.weather_data.avg_rainfall.toFixed(1)} mm</span>
+                        </div>
+                      )}
+                      {weather.weather_data.year && weather.weather_data.month && (
+                        <div className="flex justify-between text-xs font-mono">
+                          <span className="text-muted-foreground">Period:</span>
+                          <span>{weather.weather_data.year}/{weather.weather_data.month}</span>
+                        </div>
+                      )}
+                      {weather.weather_data.agency_name && (
+                        <div className="text-[10px] font-mono text-muted-foreground mt-2 border-t pt-1">
+                          Source: {weather.weather_data.agency_name}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-xs font-mono text-muted-foreground">
+                      {weather.message || 'No data available'}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground font-mono text-sm">
+              No live weather data available
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Recent Alerts & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

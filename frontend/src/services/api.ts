@@ -76,6 +76,37 @@ export interface User {
   region: string;
 }
 
+export interface WeatherRecord {
+  state_ut_name: string;
+  district_name: string;
+  subdivision_name?: string;
+  year: number;
+  month: number;
+  jan?: number;
+  feb?: number;
+  mar?: number;
+  apr?: number;
+  may?: number;
+  jun?: number;
+  jul?: number;
+  aug?: number;
+  sep?: number;
+  oct?: number;
+  nov?: number;
+  dec?: number;
+  annual?: number;
+  date?: string;
+  avg_rainfall?: number;
+  agency_name?: string;
+}
+
+export interface LiveWeatherResponse {
+  region: string;
+  weather_data: WeatherRecord | null;
+  status: string;
+  message?: string;
+}
+
 export interface PredictionInput {
   rainfall_6h: number;
   rainfall_12h: number;
@@ -248,6 +279,13 @@ export const predictForRegion = async (regionName: string): Promise<any> => {
 
 export const getAllRegions = async (): Promise<Region[]> => {
   const response = await apiClient.get('/regions');
+  return response.data;
+};
+
+export const getLiveWeatherData = async (mock: boolean = false): Promise<LiveWeatherResponse[]> => {
+  const response = await apiClient.get('/regions/live-weather', {
+    params: { mock },
+  });
   return response.data;
 };
 
