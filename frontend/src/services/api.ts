@@ -77,11 +77,11 @@ export interface User {
 }
 
 export interface WeatherRecord {
-  state_ut_name: string;
-  district_name: string;
+  state_ut_name?: string;
+  district_name?: string;
   subdivision_name?: string;
-  year: number;
-  month: number;
+  year?: number;
+  month?: number;
   jan?: number;
   feb?: number;
   mar?: number;
@@ -98,13 +98,40 @@ export interface WeatherRecord {
   date?: string;
   avg_rainfall?: number;
   agency_name?: string;
+  location?: {
+    name: string;
+    lat: number;
+    lon: number;
+  };
+  current?: {
+    temp_c: number;
+    condition: string;
+    humidity: number;
+    precip_mm: number;
+    wind_kph: number;
+  };
+  note?: string;
+}
+
+export interface LiveWeatherRegion {
+  region: string;
+  lat?: number;
+  lon?: number;
+  success: boolean;
+  weather_data: WeatherRecord | null;
+  error?: string | null;
+  status?: string;
+  message?: string;
 }
 
 export interface LiveWeatherResponse {
-  region: string;
-  weather_data: WeatherRecord | null;
-  status: string;
-  message?: string;
+  source?: string;
+  generated_at?: string;
+  total_regions: number;
+  success_count: number;
+  failure_count: number;
+  degraded: boolean;
+  regions: LiveWeatherRegion[];
 }
 
 export interface PredictionInput {
@@ -282,7 +309,7 @@ export const getAllRegions = async (): Promise<Region[]> => {
   return response.data;
 };
 
-export const getLiveWeatherData = async (mock: boolean = false): Promise<LiveWeatherResponse[]> => {
+export const getLiveWeatherData = async (mock: boolean = false): Promise<LiveWeatherResponse> => {
   const response = await apiClient.get('/regions/live-weather', {
     params: { mock },
   });

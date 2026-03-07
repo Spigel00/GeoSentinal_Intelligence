@@ -32,7 +32,7 @@ export default function DashboardPage() {
   
   const { data: liveWeather, isLoading: weatherLoading } = useQuery({
     queryKey: ["liveWeather"],
-    queryFn: () => getLiveWeatherData(false),
+    queryFn: () => getLiveWeatherData(true), // Use mock=true until API key is configured
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
@@ -164,9 +164,9 @@ export default function DashboardPage() {
                 <Skeleton key={i} className="h-24" />
               ))}
             </div>
-          ) : liveWeather && liveWeather.length > 0 ? (
+          ) : liveWeather && liveWeather.regions && liveWeather.regions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {liveWeather.map((weather, index) => (
+              {liveWeather.regions.map((weather, index) => (
                 <div
                   key={`${weather.region}-${index}`}
                   className="border rounded-lg p-4 space-y-2 hover:bg-secondary/50 transition-colors"
@@ -193,6 +193,18 @@ export default function DashboardPage() {
                         <div className="flex justify-between text-xs font-mono">
                           <span className="text-muted-foreground">Avg Rainfall:</span>
                           <span className="font-bold text-primary">{weather.weather_data.avg_rainfall.toFixed(1)} mm</span>
+                        </div>
+                      )}
+                      {weather.weather_data.current?.precip_mm !== undefined && (
+                        <div className="flex justify-between text-xs font-mono">
+                          <span className="text-muted-foreground">Precipitation:</span>
+                          <span className="font-bold text-primary">{weather.weather_data.current.precip_mm.toFixed(1)} mm</span>
+                        </div>
+                      )}
+                      {weather.weather_data.current?.condition && (
+                        <div className="flex justify-between text-xs font-mono">
+                          <span className="text-muted-foreground">Condition:</span>
+                          <span>{weather.weather_data.current.condition}</span>
                         </div>
                       )}
                       {weather.weather_data.year && weather.weather_data.month && (
