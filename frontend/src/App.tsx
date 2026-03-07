@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MainLayout } from "@/components/MainLayout";
@@ -19,13 +20,33 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 30000,
+      retry: 2,
+      refetchOnWindowFocus: true,
+      staleTime: 10000, // 10 seconds - reduced for more frequent fetches
       gcTime: 300000,
-      networkMode: 'offlineFirst',
+      networkMode: 'online', // Changed from 'offlineFirst' to force API calls
+      refetchOnMount: true, // Always refetch on component mount
+      refetchOnReconnect: true, // Refetch when network reconnects
+    },
+    mutations: {
+      networkMode: 'online',
     },
   },
+  logger: {
+    log: (...args) => console.log('🔄 React Query:', ...args),
+    warn: (...args) => console.warn('⚠️ React Query:', ...args),
+    error: (...args) => console.error('🔥 React Query:', ...args),
+  },
+});
+
+// Log query cache changes
+queryClient.getQueryCache().subscribe((event) => {
+  if (event) {
+    console.log('📦 Query Cache Event:', {
+      type: event.type,
+      query: event.query.queryKey,
+    });
+  }
 });
 
 const App = () => (
@@ -62,6 +83,8 @@ const App = () => (
       </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
+    {/* React Query Devtools for debugging */}
+    <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
   </QueryClientProvider>
 );
 

@@ -2,6 +2,11 @@ import axios from 'axios';
 
 // API Base URL - Configure based on environment
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const DEBUG_MODE = import.meta.env.VITE_DEBUG === 'true';
+
+console.log('🌍 GeoSentinel API Client Initialized');
+console.log('📡 API Base URL:', API_BASE_URL);
+console.log('🔍 Debug Mode:', DEBUG_MODE);
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -15,19 +20,43 @@ const apiClient = axios.create({
 // Request interceptor for adding auth tokens if needed
 apiClient.interceptors.request.use(
   (config) => {
+    // Log outgoing requests
+    console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
+      baseURL: config.baseURL,
+      params: config.params,
+      data: config.data,
+    });
+    
     const token = localStorage.getItem('geosentinel_auth');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('❌ API Request Error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful responses
+    console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, {
+      status: response.status,
+      data: response.data,
+    });
+    return response;
+  },
   (error) => {
+    // Log error responses
+    console.error(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
+      status: error.response?.status,
+      message: error.message,
+      data: error.response?.data,
+    });
+    
     if (error.response?.status === 401) {
       // Redirect to login if unauthorized
       localStorage.removeItem('geosentinel_auth');
@@ -86,6 +115,44 @@ export interface Alert {
   timestamp: string;
 }
 
+export interface NotificationChannelStatus {
+  enabled: boolean;
+  configured: boolean;
+  [key: string]: string | number | boolean;
+}
+
+export interface NotificationStatusResponse {
+  email: NotificationChannelStatus;
+  sms: NotificationChannelStatus;
+}
+
+export interface EmailTestRequest {
+  to_email: string;
+  subject: string;
+  message: string;
+}
+
+export interface SMSTestRequest {
+  to_phone: string;
+  message: string;
+}
+
+export interface AlertTestRequest {
+  user_email: string;
+  user_phone: string;
+  user_name: string;
+  region: string;
+  probability: number;
+  risk_level: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export interface NotificationActionResponse {
+  status: string;
+  message?: string;
+  mode?: string;
+  [key: string]: unknown;
+}
+
 // API Service Methods
 
 /**
@@ -93,6 +160,47 @@ export interface Alert {
  */
 export const checkHealth = async () => {
   const response = await apiClient.get('/health');
+  return response.data;
+};
+
+/**
+ * Notifications
+ */
+export const getNotificationStatus = async (): Promise<NotificationStatusResponse> => {
+  const response = await apiClient.get('/notifications/status');
+  return response.data;
+};
+
+export const testEmailNotification = async (
+  payload: EmailTestRequest
+): Promise<NotificationActionResponse> => {
+  const response = await apiClient.post('/notifications/test/email', payload);
+  return response.data;
+};
+
+export const testSMSNotification = async (
+  payload: SMSTestRequest
+): Promise<NotificationActionResponse> => {
+  const response = await apiClient.post('/notifications/test/sms', payload);
+  return response.data;
+};
+
+export const testAlertNotification = async (
+  payload: AlertTestRequest
+): Promise<NotificationActionResponse> => {
+  const response = await apiClient.post('/notifications/test/alert', payload);
+  return response.data;
+};
+
+export const sendRegionAlert = async (
+  regionName: string,
+  probability: number,
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH'
+): Promise<NotificationActionResponse> => {
+  const encodedRegion = encodeURIComponent(regionName);
+  const response = await apiClient.post(
+    `/notifications/send-region-alert/${encodedRegion}?probability=${probability}&risk_level=${riskLevel}`
+  );
   return response.data;
 };
 

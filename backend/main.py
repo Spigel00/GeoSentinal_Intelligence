@@ -92,10 +92,18 @@ def health_check():
 if __name__ == "__main__":
     import uvicorn
     
+    print("\n" + "="*60)
+    print("🚀 Starting GeoSentinel Backend Server")
+    print("="*60)
+    print(f"📡 Server URL: http://0.0.0.0:8000")
+    print(f"📚 API Docs: http://localhost:8000/docs")
+    print(f"🔄 Auto-reload: Disabled (run with uvicorn for reload)")
+    print("="*60 + "\n")
+    
     uvicorn.run(
-        app,
+        "main:app",  # Changed to import string format
         host="0.0.0.0",
         port=8000,
-        reload=True,
+        reload=False,  # Disabled reload to avoid warning
         log_level="info"
     )
